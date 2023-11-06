@@ -5,9 +5,9 @@ import 'package:recape/login_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
+    await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
-  );
+);
   runApp(const MyApp());
 }
 
@@ -20,8 +20,8 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       showPerformanceOverlay: false,
       themeMode: ThemeMode.system,
-      title: "Capit",
-      home: LoginPage(),
+      title: "Mile2Park",
+      home: LoginScreen(),
     );
   }
 }
