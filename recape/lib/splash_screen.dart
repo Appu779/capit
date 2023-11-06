@@ -1,36 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:recape/loginScreen.dart';
 import 'package:video_player/video_player.dart';
+import 'dart:async';
 
-class SplashScreen extends StatefulWidget {
+class VideoSplashScreen extends StatefulWidget {
   @override
-  _SplashScreenState createState() => _SplashScreenState();
+  _VideoSplashScreenState createState() => _VideoSplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _VideoSplashScreenState extends State<VideoSplashScreen> {
   late VideoPlayerController _controller;
+  late Future<void> _initializeVideoPlayerFuture;
 
   @override
   void initState() {
     super.initState();
+    _controller = VideoPlayerController.asset('assets/logo.mp4');
+    _initializeVideoPlayerFuture = _controller.initialize();
+    _controller.setLooping(true);
+    _controller.setVolume(0.0);
 
-    _controller = VideoPlayerController.asset('assets/logo.mp4')
-      ..initialize().then((_) {
-        _controller.setVolume(0.0); // Mute the video
-        _controller.play();
-
-        // After the video plays for 0.04 seconds, pause the video
-        Future.delayed(Duration(milliseconds: 40), () {
-          // _controller.pause();
-
-          // Show the logo for an additional 8 seconds
-          Future.delayed(Duration(seconds: 8), () {
-            // Navigate to the main screen
-            Navigator.pushReplacementNamed(context, '/loginScreen');
-          });
-        });
-
-        setState(() {});
+    _initializeVideoPlayerFuture.then((_) {
+      // Set a timeout to navigate to the next screen after the video has played for 5 seconds
+      Future.delayed(Duration(milliseconds: 3500), () {
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (context) => LoginPage(),
+        ));
       });
+    });
   }
 
   @override
@@ -42,18 +39,24 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black, // Set the background color to black
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            AspectRatio(
-              aspectRatio: _controller.value.aspectRatio,
-              child: VideoPlayer(_controller),
-            ),
-            SizedBox(height: 16),
-          ],
-        ),
+      backgroundColor: Colors.black,
+      body: FutureBuilder(
+        future: _initializeVideoPlayerFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            _controller.play();
+            return Center(
+              child: AspectRatio(
+                aspectRatio: _controller.value.aspectRatio,
+                child: VideoPlayer(_controller),
+              ),
+            );
+          } else {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+        },
       ),
     );
   }
