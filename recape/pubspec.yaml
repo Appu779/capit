@@ -27,7 +27,7 @@ flutter_native_splash:
 flutter:
   uses-material-design: true
   assets:
-    - assets/logo_d.png
-    - assets/logo_l.png
+    - assets/images/logo.png
+    - assets/images/g.png
     - assets/logo.mp4
     

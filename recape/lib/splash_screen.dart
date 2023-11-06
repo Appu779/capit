@@ -20,12 +20,12 @@ class _SplashScreenState extends State<SplashScreen> {
 
         // After the video plays for 0.04 seconds, pause the video
         Future.delayed(Duration(milliseconds: 40), () {
-          _controller.pause();
+          // _controller.pause();
 
           // Show the logo for an additional 8 seconds
           Future.delayed(Duration(seconds: 8), () {
             // Navigate to the main screen
-            Navigator.pushReplacementNamed(context, '/main');
+            Navigator.pushReplacementNamed(context, '/loginScreen');
           });
         });
 
