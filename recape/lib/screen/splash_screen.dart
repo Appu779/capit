@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:recape/loginScreen.dart';
+import 'package:recape/screen/login_screen.dart';
 import 'package:video_player/video_player.dart';
 import 'dart:async';
 
 class VideoSplashScreen extends StatefulWidget {
+  const VideoSplashScreen({super.key});
+
   @override
   _VideoSplashScreenState createState() => _VideoSplashScreenState();
 }
@@ -22,9 +24,9 @@ class _VideoSplashScreenState extends State<VideoSplashScreen> {
 
     _initializeVideoPlayerFuture.then((_) {
       // Set a timeout to navigate to the next screen after the video has played for 5 seconds
-      Future.delayed(Duration(milliseconds: 3500), () {
+      Future.delayed(const Duration(milliseconds: 3400), () {
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-          builder: (context) => LoginPage(),
+          builder: (context) => const LoginPage(),
         ));
       });
     });
@@ -39,18 +41,24 @@ class _VideoSplashScreenState extends State<VideoSplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black, // Set the background color to black
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            AspectRatio(
-              aspectRatio: _controller.value.aspectRatio,
-              child: VideoPlayer(_controller),
-            ),
-            SizedBox(height: 16),
-          ],
-        ),
+      backgroundColor: Colors.black,
+      body: FutureBuilder(
+        future: _initializeVideoPlayerFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            _controller.play();
+            return Center(
+              child: AspectRatio(
+                aspectRatio: _controller.value.aspectRatio,
+                child: VideoPlayer(_controller),
+              ),
+            );
+          } else {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+        },
       ),
     );
   }

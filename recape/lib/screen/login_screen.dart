@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:recape/firebase/firebase_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -62,7 +63,6 @@ class _LoginPageState extends State<LoginPage> {
               padding: const EdgeInsets.all(16),
               width: MediaQuery.of(context).size.width * 0.95,
               height: MediaQuery.of(context).size.width * 1,
-         
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -82,7 +82,7 @@ class _LoginPageState extends State<LoginPage> {
                     padding: const EdgeInsets.only(top: 80),
                     child: FloatingActionButton.extended(
                       onPressed: () async {
-                        Null;
+                        await FirebaseServices().signInWithGoogle();
                       },
                       icon: Image.asset(
                         "assets/images/g.png",
