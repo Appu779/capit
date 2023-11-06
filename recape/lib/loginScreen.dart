@@ -15,7 +15,7 @@ class LoginPage extends StatefulWidget {
         children: <TextSpan>[
           TextSpan(text: 'Agree with our'),
           TextSpan(
-              text: ' Terms and conditions',
+              text: ' Terms and conditions?',
               style: linkStyle,
               recognizer: TapGestureRecognizer()
                 ..onTap = () {
