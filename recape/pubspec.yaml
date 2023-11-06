@@ -17,22 +17,13 @@ dependencies:
 
 dev_dependencies:
   flutter_lints: ^1.0.0
-  flutter_native_splash: ^2.0.5
   flutter_test:
     sdk: flutter
 
-flutter_native_splash:
-  image: assets/logo_d.png
-  color: "#f9f9f9"
-  image_dark: assets/logo_l.png
-  color_dark: "#000000"
-
 flutter:
   uses-material-design: true
+  
   assets:
-    - assets/logo_d.png
-    - assets/logo_l.png
-    - assets/logo.mp4
-    - assets/logo.png
-    - assets/g.png
+    - assets/images/logocapit.png
+    - assets/images/g.png
     
