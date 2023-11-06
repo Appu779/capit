@@ -51,7 +51,7 @@ class _SplashScreenState extends State<SplashScreen> {
               aspectRatio: _controller.value.aspectRatio,
               child: VideoPlayer(_controller),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
           ],
         ),
       ),

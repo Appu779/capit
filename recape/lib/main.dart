@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
       showPerformanceOverlay: false,
       themeMode: ThemeMode.system,
       title: "Mile2Park",
-      home: LoginScreen(),
+      home: LoginPage(),
     );
   }
 }

@@ -1,6 +1,5 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:recape/terms.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -22,10 +21,10 @@ class LoginPage extends StatefulWidget {
               style: linkStyle,
               recognizer: TapGestureRecognizer()
                 ..onTap = () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => TermsPage()),
-                  );
+                  // Navigator.push(
+                  //   context,
+                  //   MaterialPageRoute(builder: (context) => TermsPage()),
+                  // );
                 }),
         ],
       ),
