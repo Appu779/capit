@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
 class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
   @override
   _SplashScreenState createState() => _SplashScreenState();
 }
@@ -19,11 +21,11 @@ class _SplashScreenState extends State<SplashScreen> {
         _controller.play();
 
         // After the video plays for 0.04 seconds, pause the video
-        Future.delayed(Duration(milliseconds: 40), () {
+        Future.delayed(const Duration(milliseconds: 40), () {
           _controller.pause();
 
           // Show the logo for an additional 8 seconds
-          Future.delayed(Duration(seconds: 8), () {
+          Future.delayed(const Duration(seconds: 8), () {
             // Navigate to the main screen
             Navigator.pushReplacementNamed(context, '/main');
           });
@@ -51,7 +53,7 @@ class _SplashScreenState extends State<SplashScreen> {
               aspectRatio: _controller.value.aspectRatio,
               child: VideoPlayer(_controller),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
           ],
         ),
       ),

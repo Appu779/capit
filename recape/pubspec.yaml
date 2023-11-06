@@ -10,6 +10,9 @@ dependencies:
     sdk: flutter
   video_player: ^2.2.15
   cupertino_icons: ^1.0.2
+  firebase_core: ^2.21.0
+  firebase_auth: ^4.12.1
+  google_sign_in: ^6.1.5
  
 
 dev_dependencies:
@@ -30,4 +33,6 @@ flutter:
     - assets/logo_d.png
     - assets/logo_l.png
     - assets/logo.mp4
+    - assets/logo.png
+    - assets/g.png
     
