@@ -13,6 +13,10 @@ dependencies:
   firebase_core: ^2.21.0
   firebase_auth: ^4.12.1
   google_sign_in: ^6.1.5
+  table_calendar: ^3.0.9
+  record: ^5.0.1
+  flutter_sound_record: ^3.3.2
+  just_audio: ^0.9.36
  
 
 dev_dependencies:
