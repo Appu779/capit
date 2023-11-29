@@ -1,8 +1,9 @@
+// ignore_for_file: unused_import
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:recape/firebase/firebase_options.dart';
 import 'package:recape/screen/navbar.dart';
-import 'package:recape/screen/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
