@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:recape/screen/login_screen.dart';
-import 'package:video_player/video_player.dart';
+import 'package:recape/screen/navbar.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:async';
+
+import 'package:video_player/video_player.dart';
 
 class VideoSplashScreen extends StatefulWidget {
   const VideoSplashScreen({super.key});
-
+  
   @override
   _VideoSplashScreenState createState() => _VideoSplashScreenState();
 }
@@ -23,13 +26,24 @@ class _VideoSplashScreenState extends State<VideoSplashScreen> {
     _controller.setVolume(0.0);
 
     _initializeVideoPlayerFuture.then((_) {
-      // Set a timeout to navigate to the next screen after the video has played for 5 seconds
-      Future.delayed(const Duration(milliseconds: 3400), () {
-        Navigator.of(context).pushReplacement(MaterialPageRoute(
-          builder: (context) => const LoginPage(),
-        ));
-      });
+      // Delay the login check after video play
+      Timer(const Duration(seconds: 2), () => checkLogin());
     });
+  }
+
+  Future<void> checkLogin() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const Navbar()),
+      );
+    }
   }
 
   @override

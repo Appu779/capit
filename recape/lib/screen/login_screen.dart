@@ -1,46 +1,30 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:recape/firebase/firebase_service.dart';
+import 'package:recape/screen/navbar.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
   @override
   _LoginPageState createState() => _LoginPageState();
-
-  Widget build(BuildContext context) {
-    TextStyle defaultStyle =
-        const TextStyle(color: Colors.grey, fontSize: 17.0);
-    TextStyle linkStyle = const TextStyle(color: Colors.blue);
-    return RichText(
-      text: TextSpan(
-        style: defaultStyle,
-        children: <TextSpan>[
-          const TextSpan(text: 'Agree with our'),
-          TextSpan(
-              text: ' Terms and conditions?',
-              style: linkStyle,
-              recognizer: TapGestureRecognizer()
-                ..onTap = () {
-                  // Navigator.push(
-                  //   context,
-                  //   MaterialPageRoute(builder: (context) => TermsPage()),
-                  // );
-                }),
-        ],
-      ),
-    );
-  }
 }
 
 class _LoginPageState extends State<LoginPage> {
   bool _isChecked = false;
 
+  void _navigateToNavbarPage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const Navbar()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(250.0), // here the desired height
+        preferredSize: const Size.fromHeight(250.0),
         child: AppBar(
           title: const Text(
             'Welcome to CapIt!',
@@ -50,8 +34,8 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
           centerTitle: true,
-          toolbarHeight: 300, // Adjust the height as needed
-          backgroundColor: const Color(0xfafafa),
+          toolbarHeight: 300,
+          backgroundColor: const Color(0x00fafafa),
           elevation: 0,
         ),
       ),
@@ -67,8 +51,7 @@ class _LoginPageState extends State<LoginPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Replace with your logo widget
-                  Container(
+                  SizedBox(
                     width: MediaQuery.of(context).size.width * 0.9,
                     height: MediaQuery.of(context).size.height * 0.2,
                     child: Image.asset(
@@ -99,7 +82,20 @@ class _LoginPageState extends State<LoginPage> {
             ),
             const SizedBox(height: 16),
             CheckboxListTile(
-              title: const LoginPage().build(context),
+              title: RichText(
+                text: TextSpan(
+                  style: const TextStyle(color: Colors.grey, fontSize: 17.0),
+                  children: <TextSpan>[
+                    const TextSpan(text: 'Agree with our'),
+                    TextSpan(
+                      text: ' Terms and conditions?',
+                      style: const TextStyle(color: Colors.blue),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = _navigateToNavbarPage,
+                    ),
+                  ],
+                ),
+              ),
               value: _isChecked,
               onChanged: (bool? value) {
                 setState(() {
