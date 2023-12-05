@@ -14,14 +14,22 @@ class _LoginPageState extends State<LoginPage> {
   bool _isChecked = false;
 
   void _navigateToNavbarPage() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const Navbar()),
-    );
+    if (_isChecked) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const Navbar()),
+      );
+    } else {
+      // Show an alert or toast indicating that terms and conditions should be accepted.
+      // You can use packages like 'fluttertoast' or 'flushbar' for this purpose.
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    Color checkboxColor = _isChecked ? Colors.blue : Colors.grey;
+    Color buttonColor = _isChecked ? const Color.fromARGB(255, 163, 214, 255) : const Color.fromARGB(255, 255, 255, 255);
+
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(250.0),
@@ -64,16 +72,19 @@ class _LoginPageState extends State<LoginPage> {
                   Padding(
                     padding: const EdgeInsets.only(top: 80),
                     child: FloatingActionButton.extended(
-                      onPressed: () async {
-                        await FirebaseServices().signInWithGoogle();
-                      },
+                      onPressed: _isChecked
+                          ? () async {
+                              await FirebaseServices().signInWithGoogle();
+                              _navigateToNavbarPage();
+                            }
+                          : null, // Disable button when terms and conditions are not checked
                       icon: Image.asset(
                         "assets/images/g.png",
                         height: 32,
                         width: 32,
                       ),
                       label: const Text('Sign in with Google'),
-                      backgroundColor: Colors.white,
+                      backgroundColor: buttonColor,
                       foregroundColor: Colors.black,
                     ),
                   ),
@@ -89,9 +100,13 @@ class _LoginPageState extends State<LoginPage> {
                     const TextSpan(text: 'Agree with our'),
                     TextSpan(
                       text: ' Terms and conditions?',
-                      style: const TextStyle(color: Colors.blue),
+                      style: TextStyle(color: checkboxColor),
                       recognizer: TapGestureRecognizer()
-                        ..onTap = _navigateToNavbarPage,
+                        ..onTap = () {
+                          setState(() {
+                            _isChecked = !_isChecked; // Toggle checkbox status
+                          });
+                        },
                     ),
                   ],
                 ),

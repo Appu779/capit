@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:recape/components/classdetails.dart';
 import 'package:recape/components/classroomtile.dart';
-import 'package:recape/components/customsearch.dart';
 import 'package:recape/components/teachertile.dart';
 import 'dart:math';
-
 import 'package:recape/screen/audio.dart';
 
 class Navbar extends StatefulWidget {
   const Navbar({Key? key}) : super(key: key);
-
+  
   @override
   State<Navbar> createState() => _NavbarState();
 }
@@ -115,30 +113,9 @@ class _NavbarState extends State<Navbar> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        backgroundColor: const Color.fromARGB(250, 250, 250, 255),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            color: Colors.black,
-            onPressed: () {
-              showSearch(
-                context: context,
-                delegate:
-                    CustomSearchDelegate(classrooms, _onClassroomSelected),
-              );
-            },
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          _showClassroomFormDialog(context);
-        },
-        child: const Icon(Icons.add),
-        backgroundColor: const Color.fromARGB(221, 214, 214, 214),
-        foregroundColor: const Color.fromARGB(255, 14, 19, 75),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(0), // Disable the AppBar
+        child: Container(), // Empty container to hide AppBar
       ),
       body: Padding(
         padding: const EdgeInsets.only(
@@ -182,82 +159,14 @@ class _NavbarState extends State<Navbar> {
           ),
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          _showClassroomFormDialog(context);
+        },
+        child: const Icon(Icons.add),
+        backgroundColor: const Color.fromARGB(221, 249, 249, 249),
+        foregroundColor: const Color.fromARGB(255, 2, 2, 2),
+      ),
     );
   }
 }
-
-// class CustomSearchDelegate extends SearchDelegate {
-//   final List<ClassroomTileData> classrooms;
-//   final Function(ClassroomTileData) onSelect;
-
-//   CustomSearchDelegate(this.classrooms, this.onSelect);
-
-//   @override
-//   List<Widget> buildActions(BuildContext context) {
-//     return [
-//       IconButton(
-//         icon: const Icon(Icons.clear),
-//         onPressed: () {
-//           query = '';
-//         },
-//       ),
-//     ];
-//   }
-
-//   @override
-//   Widget buildLeading(BuildContext context) {
-//     return IconButton(
-//       icon: const Icon(Icons.arrow_back),
-//       onPressed: () {
-//         close(context, null);
-//       },
-//     );
-//   }
-
-//   @override
-//   Widget buildResults(BuildContext context) {
-//     final List<ClassroomTileData> searchResults = classrooms
-//         .where((classroom) =>
-//             classroom.className.toLowerCase().contains(query.toLowerCase()) ||
-//             classroom.academicYear.toLowerCase().contains(query.toLowerCase()))
-//         .toList();
-
-//     return ListView.builder(
-//       itemCount: searchResults.length,
-//       itemBuilder: (context, index) {
-//         return ListTile(
-//           title: Text(searchResults[index].className),
-//           subtitle: Text('Academic Year: ${searchResults[index].academicYear}'),
-//           onTap: () {
-//             onSelect(searchResults[index]);
-//             close(context, null);
-//           },
-//         );
-//       },
-//     );
-//   }
-
-//   @override
-//   Widget buildSuggestions(BuildContext context) {
-//     final List<ClassroomTileData> suggestionList = classrooms
-//         .where((classroom) =>
-//             classroom.className.toLowerCase().contains(query.toLowerCase()) ||
-//             classroom.academicYear.toLowerCase().contains(query.toLowerCase()))
-//         .toList();
-
-//     return ListView.builder(
-//       itemCount: suggestionList.length,
-//       itemBuilder: (context, index) {
-//         return ListTile(
-//           title: Text(suggestionList[index].className),
-//           subtitle:
-//               Text('Academic Year: ${suggestionList[index].academicYear}'),
-//           onTap: () {
-//             onSelect(suggestionList[index]);
-//             close(context, null);
-//           },
-//         );
-//       },
-//     );
-//   }
-// }
