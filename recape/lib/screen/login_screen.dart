@@ -1,6 +1,8 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:recape/firebase/firebase_service.dart';
+import 'package:recape/screen/record.dart';
+//import 'package:recape/screen/audioSample.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -83,6 +85,10 @@ class _LoginPageState extends State<LoginPage> {
                     child: FloatingActionButton.extended(
                       onPressed: () async {
                         await FirebaseServices().signInWithGoogle();
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => AudioSampler()));
                       },
                       icon: Image.asset(
                         "assets/images/g.png",

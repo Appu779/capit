@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:recape/screen/login_screen.dart';
+import 'package:recape/screen/record.dart';
 import 'package:video_player/video_player.dart';
 import 'dart:async';
 
