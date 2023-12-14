@@ -7,7 +7,7 @@ import 'package:recape/screen/audio.dart';
 
 class Navbar extends StatefulWidget {
   const Navbar({Key? key}) : super(key: key);
-  
+
   @override
   State<Navbar> createState() => _NavbarState();
 }
@@ -27,70 +27,52 @@ class _NavbarState extends State<Navbar> {
   }
 
   void _showClassroomFormDialog(BuildContext context) {
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      isScrollControlled:
-          true, // Ensures the bottom sheet can take the full screen height
       builder: (BuildContext context) {
-        return ClipRRect(
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20.0)),
-          child: SingleChildScrollView(
-            child: Container(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text('Add New Classroom',
-                      style: Theme.of(context).textTheme.titleLarge),
-                  TextField(
-                    controller: _classNameController,
-                    decoration: const InputDecoration(labelText: 'Class Name'),
-                  ),
-                  TextField(
-                    controller: _academicYearController,
-                    decoration:
-                        const InputDecoration(labelText: 'Academic Year'),
-                  ),
-                  const SizedBox(height: 16.0),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      TextButton(
-                        onPressed: () {
-                          _classNameController.clear();
-                          _academicYearController.clear();
-                          Navigator.of(context).pop();
-                        },
-                        child: const Text('Cancel'),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          String className = _classNameController.text;
-                          String academicYear = _academicYearController.text;
-                          Color randomColor = _getRandomColor();
-
-                          ClassroomTileData newClassroom = ClassroomTileData(
-                            className: className,
-                            academicYear: academicYear,
-                            tileColor: randomColor,
-                          );
-
-                          setState(() {
-                            classrooms.add(newClassroom);
-                          });
-                          _classNameController.clear();
-                          _academicYearController.clear();
-
-                          Navigator.of(context).pop();
-                        },
-                        child: const Text('Add'),
-                      ),
-                    ],
-                  ),
-                ],
+        return AlertDialog(
+          title: const Text('Add New Classroom'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: _classNameController,
+                decoration: const InputDecoration(labelText: 'Class Name'),
               ),
-            ),
+              TextField(
+                controller: _academicYearController,
+                decoration: const InputDecoration(labelText: 'Academic Year'),
+              ),
+            ],
           ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                String className = _classNameController.text;
+                String academicYear = _academicYearController.text;
+                Color randomColor = _getRandomColor();
+
+                ClassroomTileData newClassroom = ClassroomTileData(
+                  className: className,
+                  academicYear: academicYear,
+                  tileColor: randomColor,
+                );
+
+                setState(() {
+                  classrooms.add(newClassroom);
+                });
+
+                Navigator.of(context).pop();
+              },
+              child: const Text('Add'),
+            ),
+          ],
         );
       },
     );

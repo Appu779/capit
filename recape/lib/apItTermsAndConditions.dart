@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 
 class CapItTermsAndConditions extends StatelessWidget {
+  const CapItTermsAndConditions({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('CapIt Terms and Conditions'),
+        title: const Text('CapIt Terms and Conditions'),
       ),
-      body: SingleChildScrollView(
+      body: const SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.all(16.0),
           child: Text(
             '''
             CapIt Terms and Conditions

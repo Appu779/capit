@@ -1,7 +1,9 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:recape/apItTermsAndConditions.dart';
 import 'package:recape/firebase/firebase_service.dart';
-import 'package:recape/screen/navbar.dart';
+import 'package:recape/screen/record.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -15,29 +17,61 @@ class _LoginPageState extends State<LoginPage> {
 
   void _navigateToNavbarPage() {
     if (_isChecked) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const Navbar()),
-      );
+      if (FirebaseServices().isUserLoggedIn()) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const Recorder()),
+        );
+      } else {
+        Fluttertoast.showToast(
+          msg: "Please sign in to proceed",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+      }
     } else {
       // Show an alert or toast indicating that terms and conditions should be accepted.
       // You can use packages like 'fluttertoast' or 'flushbar' for this purpose.
+      Fluttertoast.showToast(
+        msg: "Please accept the terms and conditions",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
     }
+  }
+
+  void _showTermsAndConditions() {
+    // Navigate to the terms and conditions page
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const CapItTermsAndConditions()),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    Color checkboxColor = _isChecked ? Colors.blue : Colors.grey;
-    Color buttonColor = _isChecked ? const Color.fromARGB(255, 163, 214, 255) : const Color.fromARGB(255, 255, 255, 255);
+    // Color checkboxColor = _isChecked ? Colors.blue : Colors.grey;
+    Color buttonColor = _isChecked
+        ? const Color.fromARGB(255, 163, 214, 255)
+        : const Color.fromARGB(255, 255, 255, 255);
 
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(250.0),
         child: AppBar(
           title: const Text(
-            'Welcome to CapIt!',
+            'Capit',
             style: TextStyle(
-              fontSize: 35,
+              fontFamily: 'NotoSans_Condensed',
+              fontSize: 50,
               color: Colors.blue,
             ),
           ),
@@ -97,14 +131,13 @@ class _LoginPageState extends State<LoginPage> {
                 text: TextSpan(
                   style: const TextStyle(color: Colors.grey, fontSize: 17.0),
                   children: <TextSpan>[
-                    const TextSpan(text: 'Agree with our'),
                     TextSpan(
-                      text: ' Terms and conditions?',
-                      style: TextStyle(color: checkboxColor),
+                      text: 'Agree with our Terms and conditions?',
+                      style: const TextStyle(color: Colors.black),
                       recognizer: TapGestureRecognizer()
                         ..onTap = () {
                           setState(() {
-                            _isChecked = !_isChecked; // Toggle checkbox status
+                            _showTermsAndConditions(); // Toggle checkbox status
                           });
                         },
                     ),

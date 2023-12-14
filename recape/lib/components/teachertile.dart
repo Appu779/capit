@@ -12,13 +12,21 @@ class TeacherTile extends StatefulWidget {
 
 class _TeacherTileState extends State<TeacherTile> {
   String quote = '';
+  late Key quoteKey; // Key for AnimatedSwitcher
 
   @override
   void initState() {
     super.initState();
+    quoteKey = UniqueKey(); // Initialize unique key for AnimatedSwitcher
+    _initializeQuote();
+  }
+
+  // Simulate an initial delay before updating the quote
+  Future<void> _initializeQuote() async {
+    await Future.delayed(const Duration(seconds: 1));
     _generateRandomQuote();
     // Schedule periodic quote updates
-    Timer.periodic(const Duration(minutes: 2), (Timer timer) {
+    Timer.periodic(const Duration(minutes: 1), (Timer timer) {
       _generateRandomQuote();
     });
   }
@@ -31,6 +39,7 @@ class _TeacherTileState extends State<TeacherTile> {
       // Add more quotes as needed
     ];
     setState(() {
+      quoteKey = UniqueKey(); // Generate a new key for AnimatedSwitcher
       quote = quotes[Random().nextInt(quotes.length)];
     });
   }
@@ -41,7 +50,7 @@ class _TeacherTileState extends State<TeacherTile> {
       width: double.infinity,
       height: 200,
       decoration: BoxDecoration(
-        color: const Color.fromRGBO(0, 0, 128, 1),
+        color: Color.fromARGB(255, 38, 176, 250),
         borderRadius: BorderRadius.circular(10.0),
         boxShadow: [
           BoxShadow(
@@ -64,14 +73,18 @@ class _TeacherTileState extends State<TeacherTile> {
             ),
           ),
           const SizedBox(height: 20),
-          Text(
-            quote,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontStyle: FontStyle.italic,
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 500),
+            child: Text(
+              quote,
+              key: quoteKey,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontStyle: FontStyle.italic,
+              ),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
           ),
         ],
       ),

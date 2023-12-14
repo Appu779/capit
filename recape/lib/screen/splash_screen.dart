@@ -1,14 +1,13 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:recape/screen/login_screen.dart';
-import 'package:recape/screen/navbar.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'dart:async';
-
+import 'package:recape/screen/record.dart';
 import 'package:video_player/video_player.dart';
+import 'dart:async';
 
 class VideoSplashScreen extends StatefulWidget {
   const VideoSplashScreen({super.key});
-  
+
   @override
   _VideoSplashScreenState createState() => _VideoSplashScreenState();
 }
@@ -20,30 +19,33 @@ class _VideoSplashScreenState extends State<VideoSplashScreen> {
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.asset('assets/logo.mp4');
+    _controller = VideoPlayerController.asset('assets/logo1.mp4');
     _initializeVideoPlayerFuture = _controller.initialize();
     _controller.setLooping(true);
     _controller.setVolume(0.0);
 
-    _initializeVideoPlayerFuture.then((_) {
-      // Delay the login check after video play
-      Timer(const Duration(seconds: 2), () => checkLogin());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Check if the user is already signed in
+      Future.delayed(const Duration(milliseconds: 3400), () {
+        if (FirebaseAuth.instance.currentUser != null) {
+          // User is signed in, navigate to the recorder page
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const Recorder(),
+            ),
+          );
+        } else {
+          // User is not signed in, navigate to the login page
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const LoginPage(),
+            ),
+          );
+        }
+      });
     });
-  }
-
-  Future<void> checkLogin() async {
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginPage()),
-      );
-    } else {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const Navbar()),
-      );
-    }
   }
 
   @override
