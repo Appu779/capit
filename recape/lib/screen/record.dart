@@ -141,36 +141,36 @@ class _RecorderState extends State<Recorder> {
     });
   }
 
-  _Fn? getRecorderFn() {
-    if (!_mRecorderIsInited || !_mPlayer!.isStopped) {
-      return null;
-    }
+  // _Fn? getRecorderFn() {
+  //   if (!_mRecorderIsInited || !_mPlayer!.isStopped) {
+  //     return null;
+  //   }
 
-    return _mRecorder!.isRecording
-        ? () {
-            stopRecorder().then((value) => setState(() {}));
-          }
-        : () {
-            // Start a new recording by resetting the status
-            setState(() {
-              status = 'recording';
-            });
-            record().then((value) => setState(() {}));
-          };
-  }
+  //   return _mRecorder!.isRecording
+  //       ? () {
+  //           stopRecorder().then((value) => setState(() {}));
+  //         }
+  //       : () {
+  //           // Start a new recording by resetting the status
+  //           setState(() {
+  //             status = 'recording';
+  //           });
+  //           record().then((value) => setState(() {}));
+  //         };
+  // }
 
-  _Fn? getPlaybackFn() {
-    if (!_mPlayerIsInited || !_mplaybackReady || !_mRecorder!.isStopped) {
-      return null;
-    }
-    return _mPlayer!.isPlaying
-        ? () {
-            pausePlayer().then((value) => setState(() {}));
-          }
-        : () {
-            play().then((value) => setState(() {}));
-          };
-  }
+  // _Fn? getPlaybackFn() {
+  //   if (!_mPlayerIsInited || !_mplaybackReady || !_mRecorder!.isStopped) {
+  //     return null;
+  //   }
+  //   return _mPlayer!.isPlaying
+  //       ? () {
+  //           pausePlayer().then((value) => setState(() {}));
+  //         }
+  //       : () {
+  //           play().then((value) => setState(() {}));
+  //         };
+  // }
 
   Future<void> pausePlayer() async {
     await _mPlayer!.pausePlayer();
