@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:recape/components/classdetails.dart';
+import 'package:recape/screen/clsrecord.dart';
 import 'package:recape/screen/event.dart';
+import 'package:recape/screen/record.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class Audiopage extends StatefulWidget {
@@ -168,7 +170,10 @@ class _AudiopageState extends State<Audiopage> {
                           ),
                           child: ListTile(
                             // ignore: avoid_print
-                            onTap: () => print(""),
+                            onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const Recorders())),
                             title: Text('${value[index]}'),
                             trailing: IconButton(
                               icon: const Icon(
