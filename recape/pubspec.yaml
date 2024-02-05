@@ -8,11 +8,14 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_ffmpeg: ^0.4.0
   video_player: ^2.2.15
   cupertino_icons: ^1.0.2
   firebase_core: ^2.21.0
   firebase_auth: ^4.12.1
   google_sign_in: ^6.1.5
+  cloud_firestore: ^4.12.2
+  firebase_storage: ^11.4.1
   table_calendar: ^3.0.9
   record: ^5.0.1
   flutter_sound_record: ^3.3.2

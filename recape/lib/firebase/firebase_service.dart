@@ -1,25 +1,17 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class FirebaseServices {
-  
   final _auth = FirebaseAuth.instance;
   final _googleSignIn = GoogleSignIn();
+  final _firestore = FirebaseFirestore.instance;
 
   bool isUserLoggedIn() {
-  // Implement your logic here to check if the user is logged in
-  // You can use FirebaseAuth to check the authentication state
-  final currentUser = FirebaseAuth.instance.currentUser;
-  return currentUser != null;
-}
-
-bool isCurrentUser(String userId) {
-  // Implement your logic here to check if the current user matches the provided userId
-  // You can use FirebaseAuth to get the current user and compare the userId
-  final currentUser = FirebaseAuth.instance.currentUser;
-  return currentUser != null && currentUser.uid == userId;
-}
+    final currentUser = FirebaseAuth.instance.currentUser;
+    return currentUser != null;
+  }
 
   signInWithGoogle() async {
     try {
@@ -32,6 +24,9 @@ bool isCurrentUser(String userId) {
             accessToken: googleSignInAuthentication.accessToken,
             idToken: googleSignInAuthentication.idToken);
         await _auth.signInWithCredential(authCredential);
+
+        // Create a Firestore collection for the user upon successful sign-up
+        await _createUserCollection();
       }
     } on FirebaseAuthException catch (e) {
       if (kDebugMode) {
@@ -41,9 +36,24 @@ bool isCurrentUser(String userId) {
     }
   }
 
+  Future<void> _createUserCollection() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      try {
+        // Create a collection named 'users' and set the document ID to the user's UID
+        await _firestore.collection('users').doc(user.uid).set({
+          'email': user.email,
+          'displayName': user.displayName,
+          // Add additional user data as needed
+        });
+      } catch (e) {
+        print('Error creating user collection: $e');
+      }
+    }
+  }
+
   signOut() async {
     await _auth.signOut();
     await _googleSignIn.signOut();
   }
-
 }

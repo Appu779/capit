@@ -1,11 +1,15 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:audio_session/audio_session.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:recape/screen/navbar.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 
 const int tSampleRate = 44000;
 typedef _Fn = void Function();
@@ -127,6 +131,9 @@ class _RecorderState extends State<Recorder> {
       status = 'recorded';
       _mplaybackReady = true;
     });
+
+    // Upload the audio file to Firebase Storage
+    await uploadAudioToStorage();
   }
 
   Future<void> stopRecorder() async {
@@ -141,36 +148,37 @@ class _RecorderState extends State<Recorder> {
     });
   }
 
-  // _Fn? getRecorderFn() {
-  //   if (!_mRecorderIsInited || !_mPlayer!.isStopped) {
-  //     return null;
-  //   }
+  Future<void> uploadAudioToStorage() async {
+    try {
+      String fileName =
+          DateTime.now().millisecondsSinceEpoch.toString() + '.pcm';
+      final Reference storageReference =
+          FirebaseStorage.instance.ref().child('audio').child(fileName);
+      final File audioFile = File(_mPath!);
 
-  //   return _mRecorder!.isRecording
-  //       ? () {
-  //           stopRecorder().then((value) => setState(() {}));
-  //         }
-  //       : () {
-  //           // Start a new recording by resetting the status
-  //           setState(() {
-  //             status = 'recording';
-  //           });
-  //           record().then((value) => setState(() {}));
-  //         };
-  // }
+      // Upload the audio file to Firebase Storage
+      await storageReference.putFile(audioFile);
 
-  // _Fn? getPlaybackFn() {
-  //   if (!_mPlayerIsInited || !_mplaybackReady || !_mRecorder!.isStopped) {
-  //     return null;
-  //   }
-  //   return _mPlayer!.isPlaying
-  //       ? () {
-  //           pausePlayer().then((value) => setState(() {}));
-  //         }
-  //       : () {
-  //           play().then((value) => setState(() {}));
-  //         };
-  // }
+      // Get the current user
+      User? user = FirebaseAuth.instance.currentUser;
+
+      // Access the Firestore collection "users"
+      CollectionReference usersCollection =
+          FirebaseFirestore.instance.collection('users');
+
+      // Access the document corresponding to the current user
+      DocumentReference userDocRef = usersCollection.doc(user!.uid);
+      String a = storageReference.toString();
+      // Update the document with the download URL of the audio file
+      await userDocRef.update({'audio link': a});
+
+      print(
+          'Audio file uploaded to Firebase Storage and URL stored in Firestore');
+    } catch (e) {
+      print('Error uploading audio file: $e');
+      // Handle error if upload fails
+    }
+  }
 
   Future<void> pausePlayer() async {
     await _mPlayer!.pausePlayer();
@@ -382,3 +390,15 @@ class _RecorderState extends State<Recorder> {
     );
   }
 }
+
+//Future<void> convertPCMtoMP3(String inputPath, String outputPath) async {
+  //final FlutterFFmpeg _flutterFFmpeg = FlutterFFmpeg();
+
+  //try {
+    //String command = '-i $inputPath -acodec libmp3lame $outputPath';
+    //int rc = await _flutterFFmpeg.execute(command);
+    //print('FFmpeg process exited with rc $rc');
+  //} catch (e) {
+    //print('Error executing FFmpeg command: $e');
+  //}
+//}
