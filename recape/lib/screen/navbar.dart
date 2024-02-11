@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:recape/components/classdetails.dart';
 import 'package:recape/components/classroomtile.dart';
@@ -56,8 +58,9 @@ class _NavbarState extends State<Navbar> {
               onPressed: () {
                 String className = _classNameController.text;
                 String academicYear = _academicYearController.text;
-                Color randomColor = _getRandomColor();
+                addCollectionToUser(className, academicYear);
 
+                Color randomColor = _getRandomColor();
                 ClassroomTileData newClassroom = ClassroomTileData(
                   className: className,
                   academicYear: academicYear,
@@ -150,5 +153,29 @@ class _NavbarState extends State<Navbar> {
         foregroundColor: const Color.fromARGB(255, 2, 2, 2),
       ),
     );
+  }
+}
+
+void addCollectionToUser(String className, String academicYear) async {
+  try {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      // Get a reference to the user document
+      DocumentReference userRef =
+          FirebaseFirestore.instance.collection('users').doc(user.uid);
+
+      // Add a new collection (e.g., 'posts') inside the user document
+      CollectionReference postsCollectionRef = userRef.collection('classes');
+
+      // Add a document to the 'posts' collection
+      await postsCollectionRef.add({
+        'Class Name': className,
+        'Academic Year': academicYear,
+        // Add any other fields as needed
+      });
+    }
+    print('Collection added successfully to user document.');
+  } catch (e) {
+    print('Error adding collection to user document: $e');
   }
 }

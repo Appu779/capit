@@ -1,8 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:recape/components/classdetails.dart';
 import 'package:recape/screen/clsrecord.dart';
 import 'package:recape/screen/event.dart';
-import 'package:recape/screen/record.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class Audiopage extends StatefulWidget {
@@ -105,7 +106,8 @@ class _AudiopageState extends State<Audiopage> {
                           onPressed: () {
                             // Create a new event with the text from the TextField
                             Event newEvent = Event(_eventController.text);
-
+                            addCollectionToClasses(
+                                _eventController.text, _selectedDay);
                             // If events already exist for the selected day, append the new event
                             if (events.containsKey(_selectedDay)) {
                               events[_selectedDay]!.add(newEvent);
@@ -191,5 +193,49 @@ class _AudiopageState extends State<Audiopage> {
             )
           ],
         ));
+  }
+}
+
+void addCollectionToClasses(String sessionName, DateTime? timeDate) async {
+  try {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      // Get a reference to the user document
+      DocumentReference userRef =
+          FirebaseFirestore.instance.collection('users').doc(user.uid);
+
+      // Get a reference to the classes collection
+      CollectionReference classesCollectionRef = userRef.collection('classes');
+
+      // Create a query to find the current user's instance document in the 'classes' collection
+      QuerySnapshot querySnapshot = await classesCollectionRef.get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        // Assume there's only one document per user, if more handle accordingly
+        DocumentReference currentClassesDocRef =
+            querySnapshot.docs[0].reference;
+
+        // Add a new collection named 'sessions' inside the current user's instance document
+        CollectionReference sessionsCollectionRef =
+            currentClassesDocRef.collection('sessions');
+
+        // Add a document to the 'sessions' collection
+        await sessionsCollectionRef.add({
+          'Session Name': sessionName,
+          'Audio link': "Upload cheyyanam",
+          'Generated Notes': "Undakkanam",
+          'DateTime': timeDate,
+          // Add any other fields as needed
+        });
+
+        print('Session added successfully to classes document.');
+      } else {
+        print('No classes document found for the current user.');
+      }
+    } else {
+      print('User is not logged in.');
+    }
+  } catch (e) {
+    print('Error adding session to classes document: $e');
   }
 }

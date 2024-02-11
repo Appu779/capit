@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:recape/components/classdetails.dart';
 
-
 class ClassroomTile extends StatelessWidget {
   final ClassroomTileData data;
   final VoidCallback onDelete;
