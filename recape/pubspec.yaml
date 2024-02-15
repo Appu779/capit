@@ -27,6 +27,7 @@ dependencies:
   fluttertoast: ^8.2.4
   wave: ^0.2.2
   flutter_audio_waveforms: ^1.2.1+8
+  palette_generator: ^0.3.3+3
  
 
 dev_dependencies:
@@ -51,4 +52,9 @@ flutter:
     - assets/logo1.mp4
     - assets/images/logocapit.png
     - assets/images/g.png
+    - assets/images/s1.jpg
+    - assets/images/s5.jpg
+    - assets/images/s6.jpg
+    - assets/images/s7.jpg
+   
     

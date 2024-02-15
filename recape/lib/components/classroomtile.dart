@@ -1,3 +1,4 @@
+import 'dart:math'; // Import the 'dart:math' library for random number generation
 import 'package:flutter/material.dart';
 import 'package:recape/components/classdetails.dart';
 
@@ -6,15 +7,29 @@ class ClassroomTile extends StatelessWidget {
   final VoidCallback onDelete;
   final VoidCallback onSelect;
 
-  const ClassroomTile({
+  ClassroomTile({
     Key? key,
     required this.data,
     required this.onDelete,
     required this.onSelect,
   }) : super(key: key);
 
+  final List<String> tileImages = [
+    'assets/images/s1.jpg',
+
+    'assets/images/s4.jpg',
+    'assets/images/s5.jpg',
+    'assets/images/s6.jpg',
+    'assets/images/s7.jpg',
+    // Add more images as needed
+  ];
+
   @override
   Widget build(BuildContext context) {
+    // Generate a random index for the tileImages list
+    final Random random = Random();
+    final int randomIndex = random.nextInt(tileImages.length);
+
     return GestureDetector(
       onTap: onSelect,
       child: Container(
@@ -29,6 +44,10 @@ class ClassroomTile extends StatelessWidget {
               offset: const Offset(0, 3),
             ),
           ],
+          image: DecorationImage(
+            image: AssetImage(tileImages[randomIndex]),
+            fit: BoxFit.cover,
+          ),
         ),
         child: Stack(
           children: [

@@ -50,7 +50,7 @@ class _TeacherTileState extends State<TeacherTile> {
       width: double.infinity,
       height: 200,
       decoration: BoxDecoration(
-        color: Color.fromARGB(255, 38, 176, 250),
+        color: Color.fromARGB(255, 117, 3, 71),
         borderRadius: BorderRadius.circular(10.0),
         boxShadow: [
           BoxShadow(
