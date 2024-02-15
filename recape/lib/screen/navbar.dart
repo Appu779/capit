@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:recape/components/classdetails.dart';
 import 'package:recape/components/classroomtile.dart';
 import 'package:recape/components/teachertile.dart';
-import 'dart:math';
 import 'package:recape/screen/audio.dart';
 
 class Navbar extends StatefulWidget {
@@ -20,12 +19,26 @@ class _NavbarState extends State<Navbar> {
   final TextEditingController _classNameController = TextEditingController();
   final TextEditingController _academicYearController = TextEditingController();
 
-  Color _getRandomColor() {
-    List<Color> colors = [
-      const Color.fromRGBO(0, 0, 128, 1),
-    ];
+  // Override the initState method
+  @override
+  void initState() {
+    super.initState();
+    // Call your initialization function
+    _initializeData();
+  }
 
-    return colors[Random().nextInt(colors.length)];
+  // Initialize your data here
+  void _initializeData() async {
+    // Fetch initial data
+    await _fetchInitialData();
+  }
+
+  // Fetch initial data from Firebase
+  Future<void> _fetchInitialData() async {
+    List<ClassroomTileData> initialData = await getClassNamesAndAcademicYears();
+    setState(() {
+      classrooms = initialData;
+    });
   }
 
   void _showClassroomFormDialog(BuildContext context) {
@@ -55,22 +68,18 @@ class _NavbarState extends State<Navbar> {
               child: const Text('Cancel'),
             ),
             TextButton(
-              onPressed: () {
+              onPressed: () async {
                 String className = _classNameController.text;
                 String academicYear = _academicYearController.text;
                 addCollectionToUser(className, academicYear);
-
-                Color randomColor = _getRandomColor();
-                ClassroomTileData newClassroom = ClassroomTileData(
-                  className: className,
-                  academicYear: academicYear,
-                  tileColor: randomColor,
-                );
-
+                classrooms.clear();
+                // Wait for the future to resolve using await
+                List<ClassroomTileData> newClassroom =
+                    await getClassNamesAndAcademicYears();
                 setState(() {
-                  classrooms.add(newClassroom);
+                  // Assign the resolved list to classrooms
+                  classrooms = newClassroom;
                 });
-
                 Navigator.of(context).pop();
               },
               child: const Text('Add'),
@@ -178,4 +187,48 @@ void addCollectionToUser(String className, String academicYear) async {
   } catch (e) {
     print('Error adding collection to user document: $e');
   }
+}
+
+Future<List<ClassroomTileData>> getClassNamesAndAcademicYears() async {
+  List<ClassroomTileData> refresh = [];
+  try {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      // Get a reference to the user document
+      DocumentReference userRef =
+          FirebaseFirestore.instance.collection('users').doc(user.uid);
+
+      // Get a reference to the classes collection
+      CollectionReference classesCollectionRef = userRef.collection('classes');
+
+      // Get all documents within the classes collection
+      QuerySnapshot querySnapshot = await classesCollectionRef.get();
+
+      // Loop through each document and extract 'Class Name' and 'Academic Year'
+      querySnapshot.docs.forEach(
+        (doc) {
+          // Get the data of the document
+          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+          // Extract only 'Class Name' and 'Academic Year'
+          // Add the extracted data to the list
+          Color randomColor = Colors.blue;
+
+          ClassroomTileData newClassroom = ClassroomTileData(
+            className: data['Class Name'],
+            academicYear: data['Academic Year'],
+            tileColor: randomColor,
+          );
+          refresh.add(newClassroom);
+        },
+      );
+
+      print('Class names and academic years retrieved successfully.');
+    } else {
+      print('User is not logged in.');
+    }
+  } catch (e) {
+    print('Error retrieving class names and academic years: $e');
+  }
+
+  return refresh;
 }
