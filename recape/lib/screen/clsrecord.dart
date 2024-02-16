@@ -7,8 +7,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:recape/screen/navbar.dart';
 import 'package:flutter_audio_waveforms/flutter_audio_waveforms.dart';
-import 'package:wave/wave.dart';
-import 'package:wave/config.dart';
 
 const int tSampleRate = 44000;
 typedef _Fn = void Function();
@@ -61,18 +59,16 @@ class _RecorderState extends State<Recorders> {
     });
   }
 
-  late FlutterAudioWaveform _waveform;
-
   @override
   void initState() {
     super.initState();
 
-    // Initialize the waveform with an empty data array
-    _waveform = FlutterAudioWaveform(
-      height: 50,
-      width: MediaQuery.of(context).size.width - 32,
-      samples: List<int>.filled(100, 0), // Replace with your desired size
-    );
+    _mPlayer!.openPlayer().then((value) {
+      setState(() {
+        _mPlayerIsInited = true;
+      });
+    });
+    openRecorder();
   }
 
   @override
@@ -105,11 +101,6 @@ class _RecorderState extends State<Recorders> {
         recordingDataController.stream.listen((buffer) {
       if (buffer is FoodData) {
         sink.add(buffer.data!);
-
-        // Update the waveform with the new audio data
-        setState(() {
-          _waveform.samples = buffer.data!;
-        });
       }
     });
     await _mRecorder!.startRecorder(
@@ -260,12 +251,6 @@ class _RecorderState extends State<Recorders> {
                 fontWeight: FontWeight.bold,
                 fontSize: 18.0,
               ),
-            ),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: _waveform, // Display the waveform
             ),
           ),
           Expanded(
