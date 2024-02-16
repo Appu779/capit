@@ -25,6 +25,21 @@ class _AudiopageState extends State<Audiopage> {
     super.initState();
     _selectedDay = _focusedDay;
     _selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay!));
+    _fetchEventsData();
+  }
+
+  void _fetchEventsData() async {
+    try {
+      // Fetch events data from Firestore based on the selected day
+      List<Event> eventsForDay = await getEvents(_selectedDay!);
+
+      setState(() {
+        events[_selectedDay!] = eventsForDay;
+        _selectedEvents.value = eventsForDay;
+      });
+    } catch (e) {
+      print('Error fetching events data: $e');
+    }
   }
 
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
@@ -32,7 +47,7 @@ class _AudiopageState extends State<Audiopage> {
       setState(() {
         _focusedDay = focusedDay;
         _selectedDay = selectedDay;
-        _selectedEvents.value = _getEventsForDay(selectedDay);
+        _fetchEventsData(); // Fetch events data for the newly selected day
       });
     }
   }
@@ -76,8 +91,12 @@ class _AudiopageState extends State<Audiopage> {
   }
 
   List<Event> _getEventsForDay(DateTime day) {
-    //reterive all events from selected day
-    return events[day] ?? [];
+    // Fetch events data from Firestore based on the selected day
+    List<Event> eventsForDay = events[day] ?? [];
+
+    // You can also fetch events data from Firestore here if needed
+
+    return eventsForDay;
   }
 
   @override
@@ -237,5 +256,51 @@ void addCollectionToClasses(String sessionName, DateTime? timeDate) async {
     }
   } catch (e) {
     print('Error adding session to classes document: $e');
+  }
+}
+
+Future<List<Event>> getEvents(DateTime day) async {
+  try {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      DocumentReference userRef =
+          FirebaseFirestore.instance.collection('users').doc(user.uid);
+      CollectionReference classesCollectionRef = userRef.collection('classes');
+      QuerySnapshot querySnapshot = await classesCollectionRef.get();
+
+      List<Event> allEvents = [];
+
+      for (DocumentSnapshot classDoc in querySnapshot.docs) {
+        DocumentReference classRef = classDoc.reference;
+        CollectionReference sessionsCollectionRef =
+            classRef.collection('sessions');
+
+        // Convert selected day to start and end timestamps
+        Timestamp startOfDay =
+            Timestamp.fromDate(DateTime(day.year, day.month, day.day, 0, 0, 0));
+        Timestamp endOfDay = Timestamp.fromDate(
+            DateTime(day.year, day.month, day.day, 23, 59, 59));
+
+        // Fetch events data from Firestore based on the selected day for this class
+        QuerySnapshot eventsQuerySnapshot = await sessionsCollectionRef
+            .where('DateTime',
+                isGreaterThanOrEqualTo: startOfDay,
+                isLessThanOrEqualTo: endOfDay)
+            .get();
+
+        // Convert Firestore data to list of Event objects
+        List<Event> eventsForClass = eventsQuerySnapshot.docs.map((doc) {
+          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+          return Event(data['Session Name']);
+        }).toList();
+
+        allEvents.addAll(eventsForClass);
+      }
+
+      return allEvents;
+    }
+    return [];
+  } catch (e) {
+    throw Exception('Error fetching events data from Firestore: $e');
   }
 }

@@ -241,42 +241,50 @@ class _RecorderState extends State<Recorder> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.white10,
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              '"In your own voice, record your\n     name and designation."',
-              style: TextStyle(
-                fontFamily: 'NotoSans_Condensed',
-                fontWeight: FontWeight.bold, // Use bold style
-                fontSize: 18.0,
-              ),
+    // ignore: deprecated_member_use
+    return WillPopScope(
+        onWillPop: () async {
+          // Prevent navigation back to login page
+          return false;
+        },
+        child: Scaffold(
+          appBar: AppBar(
+            elevation: 0,
+            backgroundColor: Colors.white10,
+          ),
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                const Text(
+                  '"In your own voice, record your\n     name and designation."',
+                  style: TextStyle(
+                    fontFamily: 'NotoSans_Condensed',
+                    fontWeight: FontWeight.bold, // Use bold style
+                    fontSize: 18.0,
+                  ),
+                ),
+                const SizedBox(
+                  height: 100,
+                ),
+                _buildRecordStopControl(),
+                const SizedBox(height: 20),
+                state_text(),
+                const SizedBox(
+                  height: 80,
+                ),
+                Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      _rerecord(),
+                      const SizedBox(width: 150),
+                      _nextscreen()
+                    ]),
+                const SizedBox.shrink(),
+              ],
             ),
-            const SizedBox(
-              height: 100,
-            ),
-            _buildRecordStopControl(),
-            const SizedBox(height: 20),
-            state_text(),
-            const SizedBox(
-              height: 80,
-            ),
-            Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
-              _rerecord(),
-              const SizedBox(width: 150),
-              _nextscreen()
-            ]),
-            const SizedBox.shrink(),
-          ],
-        ),
-      ),
-    );
+          ),
+        ));
   }
 
   Widget _buildRecordStopControl() {

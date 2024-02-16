@@ -2,8 +2,10 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:recape/apItTermsAndConditions.dart';
 import 'package:recape/firebase/firebase_service.dart';
+import 'package:recape/screen/navbar.dart';
 import 'package:recape/screen/record.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -15,13 +17,25 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   bool _isChecked = false;
 
-  void _navigateToNavbarPage() {
+  void _navigateToNavbarPage() async {
     if (_isChecked) {
       if (FirebaseServices().isUserLoggedIn()) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const Recorder()),
-        );
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        bool isFirstLogin = prefs.getBool('isFirstLogin') ?? true;
+        if (isFirstLogin) {
+          // Navigate to Recorder page if it's the first login
+          await prefs.setBool('isFirstLogin', false);
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const Recorder()),
+          );
+        } else {
+          // Navigate to Navbar if already logged in
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const Navbar()),
+          );
+        }
       } else {
         Fluttertoast.showToast(
           msg: "Please sign in to proceed",
@@ -34,8 +48,6 @@ class _LoginPageState extends State<LoginPage> {
         );
       }
     } else {
-      // Show an alert or toast indicating that terms and conditions should be accepted.
-      // You can use packages like 'fluttertoast' or 'flushbar' for this purpose.
       Fluttertoast.showToast(
         msg: "Please accept the terms and conditions",
         toastLength: Toast.LENGTH_SHORT,
