@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:recape/screen/navbar.dart';
+import 'package:recape/screen/classroom.dart';
 
 const int tSampleRate = 44000;
 typedef _Fn = void Function();
@@ -241,8 +241,8 @@ class _RecorderState extends State<Recorders> {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.all(16.0),
+          const Padding(
+            padding: EdgeInsets.all(16.0),
             child: Text(
               '"Record your class"',
               style: TextStyle(
@@ -252,7 +252,7 @@ class _RecorderState extends State<Recorders> {
               ),
             ),
           ),
-          Expanded(
+          const Expanded(
             child: SizedBox.shrink(),
           ),
           Padding(

@@ -7,7 +7,7 @@ import 'package:flutter_sound/flutter_sound.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:recape/screen/navbar.dart';
+import 'package:recape/screen/classroom.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 
@@ -150,6 +150,9 @@ class _RecorderState extends State<Recorder> {
 
   Future<void> uploadAudioToStorage() async {
     try {
+      // Record start time
+      DateTime startTime = DateTime.now();
+
       String fileName =
           DateTime.now().millisecondsSinceEpoch.toString() + '.pcm';
       final Reference storageReference =
@@ -158,6 +161,13 @@ class _RecorderState extends State<Recorder> {
 
       // Upload the audio file to Firebase Storage
       await storageReference.putFile(audioFile);
+
+      // Record end time
+      DateTime endTime = DateTime.now();
+
+      // Calculate upload duration
+      Duration uploadDuration = endTime.difference(startTime);
+      print('Upload duration: ${uploadDuration.inSeconds} seconds');
 
       // Get the current user
       User? user = FirebaseAuth.instance.currentUser;
@@ -168,9 +178,10 @@ class _RecorderState extends State<Recorder> {
 
       // Access the document corresponding to the current user
       DocumentReference userDocRef = usersCollection.doc(user!.uid);
-      String a = storageReference.toString();
+      String downloadUrl = await storageReference.getDownloadURL();
+
       // Update the document with the download URL of the audio file
-      await userDocRef.update({'audio link': a});
+      await userDocRef.update({'audio link': downloadUrl});
 
       print(
           'Audio file uploaded to Firebase Storage and URL stored in Firestore');

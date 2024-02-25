@@ -7,7 +7,10 @@ import 'package:recape/screen/event.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class Audiopage extends StatefulWidget {
-  const Audiopage(ClassroomTileData selectedClassroom, {super.key});
+  final ClassroomTileData
+      selectedClassroom; // Define selectedClassroom as a property
+
+  const Audiopage(this.selectedClassroom, {Key? key}) : super(key: key);
 
   @override
   State<Audiopage> createState() => _AudiopageState();
@@ -20,21 +23,27 @@ class _AudiopageState extends State<Audiopage> {
   Map<DateTime, List<Event>> events = {};
   final TextEditingController _eventController = TextEditingController();
   late final ValueNotifier<List<Event>> _selectedEvents;
+  String _selectedClassName = '';
+
   @override
   void initState() {
     super.initState();
     _selectedDay = _focusedDay;
     _selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay!));
-    _fetchEventsData();
+    _onClassSelected(widget.selectedClassroom.className);
+    _fetchEventsData(widget.selectedClassroom.className);
   }
 
-  void _fetchEventsData() async {
+  void _fetchEventsData(String className) async {
     try {
-      // Fetch events data from Firestore based on the selected day
-      List<Event> eventsForDay = await getEvents(_selectedDay!);
+      List<Event> eventsForDay = await getEvents(className, _selectedDay!);
 
       setState(() {
-        events[_selectedDay!] = eventsForDay;
+        if (eventsForDay.isNotEmpty) {
+          events[_selectedDay!] = [eventsForDay.first];
+        } else {
+          events.remove(_selectedDay);
+        }
         _selectedEvents.value = eventsForDay;
       });
     } catch (e) {
@@ -42,12 +51,18 @@ class _AudiopageState extends State<Audiopage> {
     }
   }
 
+  void _onClassSelected(String className) {
+    setState(() {
+      _selectedClassName = className; // Update the selected class name
+    });
+  }
+
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
     if (!isSameDay(_selectedDay, selectedDay)) {
       setState(() {
         _focusedDay = focusedDay;
         _selectedDay = selectedDay;
-        _fetchEventsData(); // Fetch events data for the newly selected day
+        _fetchEventsData(widget.selectedClassroom.className);
       });
     }
   }
@@ -90,60 +105,73 @@ class _AudiopageState extends State<Audiopage> {
     );
   }
 
-  List<Event> _getEventsForDay(DateTime day) {
-    // Fetch events data from Firestore based on the selected day
-    List<Event> eventsForDay = events[day] ?? [];
-
-    // You can also fetch events data from Firestore here if needed
-
-    return eventsForDay;
+List<Event> _getEventsForDay(DateTime day) {
+  // Check if events exist for the day and if it's in the current month
+  if (events.containsKey(day) && day.month == _focusedDay.month) {
+    return events[day]!;
   }
+
+  return [];
+}
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text("Audio"),
+          title: Text(
+              _selectedClassName.isNotEmpty ? _selectedClassName : "Audio"),
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
             showDialog(
-                context: context,
-                builder: (context) {
-                  _eventController.clear();
-                  return AlertDialog(
-                    scrollable: true,
-                    title: const Text("Class Taken"),
-                    content: Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: TextField(
-                        controller: _eventController,
-                      ),
+              context: context,
+              builder: (context) {
+                _eventController.clear();
+                return AlertDialog(
+                  scrollable: true,
+                  title: const Text("Class Taken"),
+                  content: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: TextField(
+                      controller: _eventController,
                     ),
-                    actions: [
-                      ElevatedButton(
-                          onPressed: () {
-                            // Create a new event with the text from the TextField
-                            Event newEvent = Event(_eventController.text);
-                            addCollectionToClasses(
-                                _eventController.text, _selectedDay);
-                            // If events already exist for the selected day, append the new event
-                            if (events.containsKey(_selectedDay)) {
-                              events[_selectedDay]!.add(newEvent);
-                            } else {
-                              // If no events exist for the selected day, create a new list with the new event
-                              events[_selectedDay!] = [newEvent];
-                            }
+                  ),
+                  actions: [
+                    ElevatedButton(
+                      onPressed: () {
+                        // Get the class name from selectedClassroom
+                        String className = widget.selectedClassroom.className;
 
-                            // Close the dialog and update the UI
-                            Navigator.of(context).pop();
-                            _selectedEvents.value =
-                                _getEventsForDay(_selectedDay!);
-                          },
-                          child: const Text("Submit"))
-                    ],
-                  );
-                });
+                        // Create a new event with the text from the TextField
+                        Event newEvent =
+                            Event(_eventController.text, dateTime: null);
+
+                        // Call addCollectionToClasses with className parameter
+                        addSessionToClass(
+                          className,
+                          _eventController.text,
+                          _selectedDay,
+                        );
+
+                        // If events already exist for the selected day, append the new event
+                        if (events.containsKey(_selectedDay)) {
+                          events[_selectedDay]!.add(newEvent);
+                        } else {
+                          // If no events exist for the selected day, create a new list with the new event
+                          events[_selectedDay!] = [newEvent];
+                        }
+
+                        // Close the dialog and update the UI
+                        Navigator.of(context).pop();
+                        _selectedEvents.value = _getEventsForDay(_selectedDay!);
+                      },
+                      child: const Text("Submit"),
+                    )
+                  ],
+                );
+              },
+            );
           },
           child: const Icon(Icons.add),
         ),
@@ -215,7 +243,8 @@ class _AudiopageState extends State<Audiopage> {
   }
 }
 
-void addCollectionToClasses(String sessionName, DateTime? timeDate) async {
+void addSessionToClass(
+    String className, String sessionName, DateTime? timeDate) async {
   try {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -226,17 +255,18 @@ void addCollectionToClasses(String sessionName, DateTime? timeDate) async {
       // Get a reference to the classes collection
       CollectionReference classesCollectionRef = userRef.collection('classes');
 
-      // Create a query to find the current user's instance document in the 'classes' collection
-      QuerySnapshot querySnapshot = await classesCollectionRef.get();
+      // Query the classes collection to find the class document by its name
+      QuerySnapshot querySnapshot = await classesCollectionRef
+          .where('Class Name', isEqualTo: className)
+          .get();
 
       if (querySnapshot.docs.isNotEmpty) {
-        // Assume there's only one document per user, if more handle accordingly
-        DocumentReference currentClassesDocRef =
-            querySnapshot.docs[0].reference;
+        // Assume there's only one document per class, if more handle accordingly
+        DocumentReference classDocRef = querySnapshot.docs[0].reference;
 
-        // Add a new collection named 'sessions' inside the current user's instance document
+        // Add a new collection named 'sessions' inside the class document
         CollectionReference sessionsCollectionRef =
-            currentClassesDocRef.collection('sessions');
+            classDocRef.collection('sessions');
 
         // Add a document to the 'sessions' collection
         await sessionsCollectionRef.add({
@@ -247,57 +277,53 @@ void addCollectionToClasses(String sessionName, DateTime? timeDate) async {
           // Add any other fields as needed
         });
 
-        print('Session added successfully to classes document.');
+        print('Session added successfully to the class document.');
       } else {
-        print('No classes document found for the current user.');
+        print('No class document found with the name $className.');
       }
     } else {
       print('User is not logged in.');
     }
   } catch (e) {
-    print('Error adding session to classes document: $e');
+    print('Error adding session to class document: $e');
   }
 }
 
-Future<List<Event>> getEvents(DateTime day) async {
+Future<List<Event>> getEvents(String className, DateTime day) async {
   try {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       DocumentReference userRef =
           FirebaseFirestore.instance.collection('users').doc(user.uid);
       CollectionReference classesCollectionRef = userRef.collection('classes');
-      QuerySnapshot querySnapshot = await classesCollectionRef.get();
 
-      List<Event> allEvents = [];
+      QuerySnapshot classQuerySnapshot = await classesCollectionRef
+          .where('Class Name', isEqualTo: className)
+          .get();
 
-      for (DocumentSnapshot classDoc in querySnapshot.docs) {
-        DocumentReference classRef = classDoc.reference;
+      if (classQuerySnapshot.docs.isNotEmpty) {
+        DocumentSnapshot classDoc = classQuerySnapshot.docs.first;
         CollectionReference sessionsCollectionRef =
-            classRef.collection('sessions');
+            classDoc.reference.collection('sessions');
 
-        // Convert selected day to start and end timestamps
-        Timestamp startOfDay =
-            Timestamp.fromDate(DateTime(day.year, day.month, day.day, 0, 0, 0));
+        Timestamp startOfDay = Timestamp.fromDate(
+            DateTime(day.year, day.month, day.day, 0, 0, 0));
         Timestamp endOfDay = Timestamp.fromDate(
             DateTime(day.year, day.month, day.day, 23, 59, 59));
 
-        // Fetch events data from Firestore based on the selected day for this class
         QuerySnapshot eventsQuerySnapshot = await sessionsCollectionRef
             .where('DateTime',
                 isGreaterThanOrEqualTo: startOfDay,
                 isLessThanOrEqualTo: endOfDay)
             .get();
 
-        // Convert Firestore data to list of Event objects
         List<Event> eventsForClass = eventsQuerySnapshot.docs.map((doc) {
           Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-          return Event(data['Session Name']);
+          return Event(data['Session Name'], dateTime: null);
         }).toList();
 
-        allEvents.addAll(eventsForClass);
+        return eventsForClass;
       }
-
-      return allEvents;
     }
     return [];
   } catch (e) {

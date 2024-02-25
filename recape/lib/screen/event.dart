@@ -1,11 +1,11 @@
 class Event {
-  String text;
-  DateTime creationTime;
+  final String sessionName;
+  final DateTime? dateTime;
 
-  Event(this.text) : creationTime = DateTime.now();
+  Event(this.sessionName, {this.dateTime});
 
   @override
   String toString() {
-    return text;
+    return 'Event: $sessionName';
   }
 }

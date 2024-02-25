@@ -15,6 +15,7 @@ class Navbar extends StatefulWidget {
 
 class _NavbarState extends State<Navbar> {
   List<ClassroomTileData> classrooms = [];
+  bool _isLoading = false; // Track whether data is currently being loaded
 
   final TextEditingController _classNameController = TextEditingController();
   final TextEditingController _academicYearController = TextEditingController();
@@ -35,10 +36,19 @@ class _NavbarState extends State<Navbar> {
 
   // Fetch initial data from Firebase
   Future<void> _fetchInitialData() async {
+    setState(() {
+      _isLoading = true; // Set loading state to true
+    });
     List<ClassroomTileData> initialData = await getClassNamesAndAcademicYears();
     setState(() {
       classrooms = initialData;
+      _isLoading = false; // Set loading state to false once data is loaded
     });
+  }
+
+  // Handler for pull-to-refresh
+  Future<void> _refreshData() async {
+    await _fetchInitialData();
   }
 
   void _showClassroomFormDialog(BuildContext context) {
@@ -121,35 +131,44 @@ class _NavbarState extends State<Navbar> {
               fit: BoxFit.cover,
             ),
           ),
-          child: ListView(
-            children: [
-              const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: TeacherTile(),
-              ),
-              GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                ),
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: classrooms.length,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: ClassroomTile(
-                      data: classrooms[index],
-                      onDelete: () {
-                        _deleteClassroom(index);
-                      },
-                      onSelect: () {
-                        _onClassroomSelected(classrooms[index]);
-                      },
-                    ),
-                  );
-                },
-              ),
-            ],
+          child: RefreshIndicator(
+            onRefresh: _refreshData, // Set the refresh handler
+            child: _isLoading
+                ? Center(
+                    child:
+                        CircularProgressIndicator(), // Show loading indicator while data is being fetched
+                  )
+                : ListView(
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: TeacherTile(),
+                      ),
+                      GridView.builder(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                        ),
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: classrooms.length,
+                        itemBuilder: (context, index) {
+                          return Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: ClassroomTile(
+                              data: classrooms[index],
+                              onDelete: () {
+                                _deleteClassroom(index);
+                              },
+                              onSelect: () {
+                                _onClassroomSelected(classrooms[index]);
+                              },
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
           ),
         ),
       ),

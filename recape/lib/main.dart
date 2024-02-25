@@ -1,6 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:recape/firebase/firebase_options.dart';
+import 'package:recape/screen/classroom.dart';
+import 'package:recape/screen/event_calendar.dart';
 import 'package:recape/screen/splash_screen.dart';
 
 void main() async {
@@ -17,6 +19,6 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-        debugShowCheckedModeBanner: false, home: VideoSplashScreen());
+        debugShowCheckedModeBanner: false, home: Navbar());
   }
 }
