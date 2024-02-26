@@ -56,7 +56,7 @@ class ClassroomTile extends StatelessWidget {
               child: PopupMenuButton<String>(
                 onSelected: (value) {
                   if (value == 'delete') {
-                    onDelete();
+                    onDelete(); // Call delete method
                   }
                 },
                 itemBuilder: (BuildContext context) {
