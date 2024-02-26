@@ -9,7 +9,6 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:recape/screen/navbar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 
 const int tSampleRate = 44000;
 typedef _Fn = void Function();
