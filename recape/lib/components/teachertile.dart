@@ -13,6 +13,7 @@ class TeacherTile extends StatefulWidget {
 class _TeacherTileState extends State<TeacherTile> {
   String quote = '';
   late Key quoteKey; // Key for AnimatedSwitcher
+  late Timer _timer; // Declare timer variable
 
   @override
   void initState() {
@@ -21,16 +22,16 @@ class _TeacherTileState extends State<TeacherTile> {
     _initializeQuote();
   }
 
-  // Simulate an initial delay before updating the quote
-  Future<void> _initializeQuote() async {
-    await Future.delayed(const Duration(seconds: 1));
+  // Initialize the quote and start the timer
+  void _initializeQuote() {
     _generateRandomQuote();
     // Schedule periodic quote updates
-    Timer.periodic(const Duration(minutes: 1), (Timer timer) {
+    _timer = Timer.periodic(const Duration(minutes: 1), (Timer timer) {
       _generateRandomQuote();
     });
   }
 
+  // Generate a new random quote
   void _generateRandomQuote() {
     List<String> quotes = [
       "Where Learning Comes to Life: Your Classroom, Your Adventure.",
@@ -42,6 +43,13 @@ class _TeacherTileState extends State<TeacherTile> {
       quoteKey = UniqueKey(); // Generate a new key for AnimatedSwitcher
       quote = quotes[Random().nextInt(quotes.length)];
     });
+  }
+
+  @override
+  void dispose() {
+    // Cancel the timer when the widget is disposed
+    _timer.cancel();
+    super.dispose();
   }
 
   @override
@@ -91,3 +99,4 @@ class _TeacherTileState extends State<TeacherTile> {
     );
   }
 }
+

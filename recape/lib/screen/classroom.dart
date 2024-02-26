@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:recape/components/classdetails.dart';
 import 'package:recape/components/classroomtile.dart';
@@ -51,6 +52,12 @@ class _NavbarState extends State<Navbar> {
     await _fetchInitialData();
   }
 
+  void _deleteClassroom(int index) {
+    setState(() {
+      classrooms.removeAt(index);
+    });
+  }
+
   void _showClassroomFormDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -100,12 +107,6 @@ class _NavbarState extends State<Navbar> {
     );
   }
 
-  void _deleteClassroom(int index) {
-    setState(() {
-      classrooms.removeAt(index);
-    });
-  }
-
   void _onClassroomSelected(ClassroomTileData selectedClassroom) {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -134,7 +135,7 @@ class _NavbarState extends State<Navbar> {
           child: RefreshIndicator(
             onRefresh: _refreshData, // Set the refresh handler
             child: _isLoading
-                ? Center(
+                ? const Center(
                     child:
                         CircularProgressIndicator(), // Show loading indicator while data is being fetched
                   )
@@ -202,9 +203,13 @@ void addCollectionToUser(String className, String academicYear) async {
         // Add any other fields as needed
       });
     }
-    print('Collection added successfully to user document.');
+    if (kDebugMode) {
+      print('Collection added successfully to user document.');
+    }
   } catch (e) {
-    print('Error adding collection to user document: $e');
+    if (kDebugMode) {
+      print('Error adding collection to user document: $e');
+    }
   }
 }
 
@@ -228,10 +233,7 @@ Future<List<ClassroomTileData>> getClassNamesAndAcademicYears() async {
         (doc) {
           // Get the data of the document
           Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-          // Extract only 'Class Name' and 'Academic Year'
-          // Add the extracted data to the list
           Color randomColor = Colors.blue;
-
           ClassroomTileData newClassroom = ClassroomTileData(
             className: data['Class Name'],
             academicYear: data['Academic Year'],
@@ -248,6 +250,5 @@ Future<List<ClassroomTileData>> getClassNamesAndAcademicYears() async {
   } catch (e) {
     print('Error retrieving class names and academic years: $e');
   }
-
   return refresh;
 }

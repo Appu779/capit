@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
@@ -32,19 +33,25 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
     loadPreviousEvents();
   }
 
-  loadPreviousEvents() {
-    mySelectedEvents = {
-      "2024-02-25": [
-        {"eventDescp": "11", "eventTitle": "111"},
-        {"eventDescp": "22", "eventTitle": "22"}
-      ],
-      "2022-09-30": [
-        {"eventDescp": "22", "eventTitle": "22"}
-      ],
-      "2022-09-20": [
-        {"eventTitle": "ss", "eventDescp": "ss"}
-      ]
-    };
+  loadPreviousEvents() async {
+    try {
+      final eventsSnapshot =
+          await FirebaseFirestore.instance.collection('events').get();
+
+      eventsSnapshot.docs.forEach((eventDoc) {
+        final eventData = eventDoc.data();
+        final eventDate = eventData['date'] as Timestamp;
+        final eventDateFormatted =
+            DateFormat('yyyy-MM-dd').format(eventDate.toDate());
+        mySelectedEvents[eventDateFormatted] ??= [];
+        mySelectedEvents[eventDateFormatted]!.add({
+          "eventTitle": eventData['title'] ?? '',
+          "eventDescp": eventData['description'] ?? '',
+        });
+      });
+    } catch (error) {
+      print('Error loading events: $error');
+    }
   }
 
   List<Map<String, String>> _listOfDayEvents(DateTime dateTime) {
@@ -57,8 +64,8 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
   }
 
   bool _isWithinRange(DateTime date, DateTime firstDay, DateTime lastDay) {
-    return date.isAfter(firstDay.subtract(Duration(days: 1))) &&
-        date.isBefore(lastDay.add(Duration(days: 1)));
+    return date.isAfter(firstDay.subtract(const Duration(days: 1))) &&
+        date.isBefore(lastDay.add(const Duration(days: 1)));
   }
 
   Future<void> _showAddEventDialog() async {
@@ -94,7 +101,7 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
           ),
           TextButton(
             child: const Text('Add Event'),
-            onPressed: () {
+            onPressed: () async {
               if (titleController.text.isEmpty &&
                   descpController.text.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -105,7 +112,7 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
                 );
                 return;
               } else {
-                setState(() {
+                try {
                   final selectedDateFormatted =
                       DateFormat('yyyy-MM-dd').format(_selectedDate!);
                   mySelectedEvents[selectedDateFormatted] ??= [];
@@ -113,12 +120,21 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
                     "eventTitle": titleController.text,
                     "eventDescp": descpController.text,
                   });
-                });
 
-                titleController.clear();
-                descpController.clear();
-                Navigator.pop(context);
-                return;
+                  // Save event data to Firestore
+                  await FirebaseFirestore.instance.collection('events').add({
+                    'title': titleController.text,
+                    'description': descpController.text,
+                    'date': _selectedDate,
+                  });
+
+                  titleController.clear();
+                  descpController.clear();
+                  Navigator.pop(context);
+                  return;
+                } catch (error) {
+                  print('Error adding event: $error');
+                }
               }
             },
           )

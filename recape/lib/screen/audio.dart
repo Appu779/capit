@@ -22,7 +22,7 @@ class _AudiopageState extends State<Audiopage> {
   DateTime? _selectedDay;
   Map<DateTime, List<Event>> events = {};
   final TextEditingController _eventController = TextEditingController();
-  late final ValueNotifier<List<Event>> _selectedEvents;
+  late ValueNotifier<List<Event>> _selectedEvents;
   String _selectedClassName = '';
 
   @override
@@ -30,8 +30,8 @@ class _AudiopageState extends State<Audiopage> {
     super.initState();
     _selectedDay = _focusedDay;
     _selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay!));
-    _onClassSelected(widget.selectedClassroom.className);
     _fetchEventsData(widget.selectedClassroom.className);
+    _onClassSelected(widget.selectedClassroom.className);
   }
 
   void _fetchEventsData(String className) async {
@@ -105,77 +105,97 @@ class _AudiopageState extends State<Audiopage> {
     );
   }
 
-List<Event> _getEventsForDay(DateTime day) {
-  // Check if events exist for the day and if it's in the current month
-  if (events.containsKey(day) && day.month == _focusedDay.month) {
-    return events[day]!;
+  List<Event> _getEventsForDay(DateTime day) {
+    // Check if events exist for the day, if so, return a list with that day
+    if (events.containsKey(day)) {
+      return events[day]!;
+    }
+
+    return [];
   }
 
-  return [];
-}
+  Future<void> _handleRefresh() async {
+    try {
+      _fetchEventsData(widget.selectedClassroom.className);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Data refreshed'),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to refresh data: $e'),
+        ),
+      );
+    }
+  }
 
+  
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text(
-              _selectedClassName.isNotEmpty ? _selectedClassName : "Audio"),
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            showDialog(
-              context: context,
-              builder: (context) {
-                _eventController.clear();
-                return AlertDialog(
-                  scrollable: true,
-                  title: const Text("Class Taken"),
-                  content: Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: TextField(
-                      controller: _eventController,
-                    ),
+      appBar: AppBar(
+        title:
+            Text(_selectedClassName.isNotEmpty ? _selectedClassName : "Audio"),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (context) {
+              _eventController.clear();
+              return AlertDialog(
+                scrollable: true,
+                title: const Text("Class Taken"),
+                content: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: TextField(
+                    controller: _eventController,
                   ),
-                  actions: [
-                    ElevatedButton(
-                      onPressed: () {
-                        // Get the class name from selectedClassroom
-                        String className = widget.selectedClassroom.className;
+                ),
+                actions: [
+                  ElevatedButton(
+                    onPressed: () {
+                      // Get the class name from selectedClassroom
+                      String className = widget.selectedClassroom.className;
 
-                        // Create a new event with the text from the TextField
-                        Event newEvent =
-                            Event(_eventController.text, dateTime: null);
+                      // Create a new event with the text from the TextField
+                      Event newEvent =
+                          Event(_eventController.text, dateTime: null);
 
-                        // Call addCollectionToClasses with className parameter
-                        addSessionToClass(
-                          className,
-                          _eventController.text,
-                          _selectedDay,
-                        );
+                      // Call addCollectionToClasses with className parameter
+                      addSessionToClass(
+                        className,
+                        _eventController.text,
+                        _selectedDay,
+                      );
 
-                        // If events already exist for the selected day, append the new event
-                        if (events.containsKey(_selectedDay)) {
-                          events[_selectedDay]!.add(newEvent);
-                        } else {
-                          // If no events exist for the selected day, create a new list with the new event
-                          events[_selectedDay!] = [newEvent];
-                        }
+                      // If events already exist for the selected day, append the new event
+                      if (events.containsKey(_selectedDay)) {
+                        events[_selectedDay]!.add(newEvent);
+                      } else {
+                        // If no events exist for the selected day, create a new list with the new event
+                        events[_selectedDay!] = [newEvent];
+                      }
 
-                        // Close the dialog and update the UI
-                        Navigator.of(context).pop();
-                        _selectedEvents.value = _getEventsForDay(_selectedDay!);
-                      },
-                      child: const Text("Submit"),
-                    )
-                  ],
-                );
-              },
-            );
-          },
-          child: const Icon(Icons.add),
-        ),
-        body: Column(
+                      // Close the dialog and update the UI
+                      Navigator.of(context).pop();
+                      _selectedEvents.value = _getEventsForDay(_selectedDay!);
+                    },
+                    child: const Text("Submit"),
+                  )
+                ],
+              );
+            },
+          );
+        },
+        child: const Icon(Icons.add),
+      ),
+      body: RefreshIndicator(
+        onRefresh: _handleRefresh,
+        child: Column(
           children: [
             TableCalendar(
               locale: "en_US",
@@ -205,41 +225,46 @@ List<Event> _getEventsForDay(DateTime day) {
             ),
             Expanded(
               child: ValueListenableBuilder<List<Event>>(
-                  valueListenable: _selectedEvents,
-                  builder: (context, value, _) {
-                    return ListView.builder(
-                      itemCount: value.length,
-                      itemBuilder: ((context, index) {
-                        return Container(
-                          margin: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 4),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(),
-                          ),
-                          child: ListTile(
-                            // ignore: avoid_print
-                            onTap: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => const Recorders())),
-                            title: Text('${value[index]}'),
-                            trailing: IconButton(
-                              icon: const Icon(
-                                  Icons.more_vert), // More options icon
-                              onPressed: () {
-                                // Handle more options click here
-                                _showEventOptionsDialog(value[index]);
-                              },
+                valueListenable: _selectedEvents,
+                builder: (context, value, _) {
+                  return ListView.builder(
+                    itemCount: value.length,
+                    itemBuilder: ((context, index) {
+                      return Container(
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 4),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(),
+                        ),
+                        child: ListTile(
+                          // ignore: avoid_print
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const Recorders(),
                             ),
                           ),
-                        );
-                      }),
-                    );
-                  }),
-            )
+                          title: Text('${value[index]}'),
+                          trailing: IconButton(
+                            icon: const Icon(
+                                Icons.more_vert), // More options icon
+                            onPressed: () {
+                              // Handle more options click here
+                              _showEventOptionsDialog(value[index]);
+                            },
+                          ),
+                        ),
+                      );
+                    }),
+                  );
+                },
+              ),
+            ),
           ],
-        ));
+        ),
+      ),
+    );
   }
 }
 
@@ -306,8 +331,8 @@ Future<List<Event>> getEvents(String className, DateTime day) async {
         CollectionReference sessionsCollectionRef =
             classDoc.reference.collection('sessions');
 
-        Timestamp startOfDay = Timestamp.fromDate(
-            DateTime(day.year, day.month, day.day, 0, 0, 0));
+        Timestamp startOfDay =
+            Timestamp.fromDate(DateTime(day.year, day.month, day.day, 0, 0, 0));
         Timestamp endOfDay = Timestamp.fromDate(
             DateTime(day.year, day.month, day.day, 23, 59, 59));
 
