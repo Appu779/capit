@@ -148,12 +148,87 @@ class _NavbarState extends State<Navbar> {
     );
   }
 
+  Future<void> _signOut() async {
+    try {
+      await FirebaseAuth.instance.signOut();
+      Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+    } catch (e) {
+      print('Error signing out: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(0), // Disable the AppBar
-        child: Container(), // Empty container to hide AppBar
+      appBar: AppBar(
+        automaticallyImplyLeading: false, // Remove the default back button
+        title: const Text(''), // Remove the title
+        actions: [
+          Builder(
+            builder: (context) => IconButton(
+              icon: const Icon(Icons.menu),
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+            ),
+          ),
+        ],
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: const BoxDecoration(
+                color: Color.fromARGB(255, 0, 1, 1),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  CircleAvatar(
+                    // Display user's profile photo here
+                    radius: 30,
+                    // backgroundImage: NetworkImage(user.photoURL),
+                    // You can replace the above line with your implementation
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    // Display user's name here
+                    'John Doe',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    // Display user's email here
+                    'john.doe@example.com',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.person),
+              title: const Text('Profile'),
+              onTap: () {
+                // Implement profile navigation here
+                Navigator.pop(context); // Close the drawer
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.logout),
+              title: const Text('Logout'),
+              onTap: _signOut,
+            ),
+          ],
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.only(
@@ -266,7 +341,7 @@ Future<List<ClassroomTileData>> getClassNamesAndAcademicYears() async {
         (doc) {
           // Get the data of the document
           Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-          Color randomColor = Colors.blue;
+          Color randomColor = const Color.fromARGB(255, 0, 0, 0);
           ClassroomTileData newClassroom = ClassroomTileData(
             className: data['Class Name'],
             academicYear: data['Academic Year'],
