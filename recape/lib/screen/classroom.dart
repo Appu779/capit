@@ -52,10 +52,43 @@ class _NavbarState extends State<Navbar> {
     await _fetchInitialData();
   }
 
-  void _deleteClassroom(int index) {
-    setState(() {
-      classrooms.removeAt(index);
-    });
+  void _deleteClassroom(int index) async {
+    ClassroomTileData classroomToDelete = classrooms[index];
+
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        // Get a reference to the user document
+        DocumentReference userRef =
+            FirebaseFirestore.instance.collection('users').doc(user.uid);
+
+        // Get a reference to the classes collection
+        CollectionReference classesCollectionRef =
+            userRef.collection('classes');
+
+        // Query for the document to delete
+        QuerySnapshot querySnapshot = await classesCollectionRef
+            .where('Class Name', isEqualTo: classroomToDelete.className)
+            .where('Academic Year', isEqualTo: classroomToDelete.academicYear)
+            .get();
+
+        // Loop through each document and delete it
+        querySnapshot.docs.forEach((doc) {
+          doc.reference.delete();
+        });
+
+        // Remove the deleted classroom from the local list
+        setState(() {
+          classrooms.removeAt(index);
+        });
+
+        print('Classroom deleted successfully.');
+      } else {
+        print('User is not logged in.');
+      }
+    } catch (e) {
+      print('Error deleting classroom: $e');
+    }
   }
 
   void _showClassroomFormDialog(BuildContext context) {
@@ -159,7 +192,7 @@ class _NavbarState extends State<Navbar> {
                             child: ClassroomTile(
                               data: classrooms[index],
                               onDelete: () {
-                                _deleteClassroom(index);
+                                _deleteClassroom(index); // Call delete method
                               },
                               onSelect: () {
                                 _onClassroomSelected(classrooms[index]);
