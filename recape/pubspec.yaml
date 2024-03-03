@@ -28,6 +28,8 @@ dependencies:
   wave: ^0.2.2
   flutter_audio_waveforms: ^1.2.1+8
   shared_preferences: ^2.2.2
+  google_speech: ^5.2.0+1
+  loading_indicator: ^3.1.1
  
 
 dev_dependencies:
@@ -56,5 +58,6 @@ flutter:
     - assets/images/s5.jpg
     - assets/images/s6.jpg
     - assets/images/s7.jpg
+    - assets/images/s4.jpg
    
     

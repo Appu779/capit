@@ -16,7 +16,6 @@ class ClassroomTile extends StatelessWidget {
 
   final List<String> tileImages = [
     'assets/images/s1.jpg',
-
     'assets/images/s4.jpg',
     'assets/images/s5.jpg',
     'assets/images/s6.jpg',

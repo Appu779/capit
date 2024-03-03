@@ -161,7 +161,7 @@ class _NavbarState extends State<Navbar> {
         child: Container(
           decoration: const BoxDecoration(
             image: DecorationImage(
-              image: AssetImage('assets/geometria_background.jpg'),
+              image: AssetImage(''),
               fit: BoxFit.cover,
             ),
           ),

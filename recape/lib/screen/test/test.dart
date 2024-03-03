@@ -1,242 +1,149 @@
-import 'dart:async';
-import 'dart:io';
-import 'package:audio_session/audio_session.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_sound/flutter_sound.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:flutter/services.dart';
+import 'package:google_speech/google_speech.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:loading_indicator/loading_indicator.dart';
+import 'dart:io';
+import 'dart:async';
 
-const int tSampleRate = 44000;
-typedef _Fn = void Function();
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({required Key key, required this.title}) : super(key: key);
 
-class RecordToStreamExample extends StatefulWidget {
-  const RecordToStreamExample({super.key});
+  final String title;
 
   @override
-  _RecordToStreamExampleState createState() => _RecordToStreamExampleState();
+  _MyHomePageState createState() => _MyHomePageState();
 }
 
-class _RecordToStreamExampleState extends State<RecordToStreamExample> {
-  FlutterSoundPlayer? _mPlayer = FlutterSoundPlayer();
-  FlutterSoundRecorder? _mRecorder = FlutterSoundRecorder();
-  bool _mPlayerIsInited = false;
-  bool _mRecorderIsInited = false;
-  bool _mplaybackReady = false;
-  String? _mPath;
-  StreamSubscription? _mRecordingDataSubscription;
+class _MyHomePageState extends State<MyHomePage> {
+  // ignore: non_constant_identifier_names
+  bool is_Transcribing = false;
+  String content = '';
 
-  Future<void> _openRecorder() async {
-    var status = await Permission.microphone.request();
-    if (status != PermissionStatus.granted) {
-      throw RecordingPermissionException('Microphone permission not granted');
-    }
-    await _mRecorder!.openRecorder();
-
-    final session = await AudioSession.instance;
-    await session.configure(AudioSessionConfiguration(
-      avAudioSessionCategory: AVAudioSessionCategory.playAndRecord,
-      avAudioSessionCategoryOptions:
-          AVAudioSessionCategoryOptions.allowBluetooth |
-              AVAudioSessionCategoryOptions.defaultToSpeaker,
-      avAudioSessionMode: AVAudioSessionMode.spokenAudio,
-      avAudioSessionRouteSharingPolicy:
-          AVAudioSessionRouteSharingPolicy.defaultPolicy,
-      avAudioSessionSetActiveOptions: AVAudioSessionSetActiveOptions.none,
-      androidAudioAttributes: const AndroidAudioAttributes(
-        contentType: AndroidAudioContentType.speech,
-        flags: AndroidAudioFlags.none,
-        usage: AndroidAudioUsage.voiceCommunication,
-      ),
-      androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
-      androidWillPauseWhenDucked: true,
-    ));
-
+  void transcribe() async {
     setState(() {
-      _mRecorderIsInited = true;
+      is_Transcribing = true;
     });
+    final serviceAccount = ServiceAccount.fromString(
+        '${(await rootBundle.loadString('assets/androdrop-12345-c0f399677f1e.json'))}');
+    final speechToText = SpeechToText.viaServiceAccount(serviceAccount);
+
+    final config = RecognitionConfig(
+        encoding: AudioEncoding.LINEAR16,
+        model: RecognitionModel.basic,
+        enableAutomaticPunctuation: true,
+        sampleRateHertz: 16000,
+        languageCode: 'en-US');
+
+    final audio = await _getAudioContent('test.wav');
+    await speechToText.recognize(config, audio).then((value) {
+      setState(() {
+        content = value.results.map((e) => e.alternatives.first.transcript).join('\n');
+      });
+    }).whenComplete(() {
+      setState(() {
+        is_Transcribing = false;
+      });
+    });
+  }
+
+  Future<List<int>> _getAudioContent(String name) async {
+    //final directory = await getApplicationDocumentsDirectory();
+    //final path = directory.path + '/$name';
+    const path = '/sdcard/Download/temp.wav';
+    return File(path).readAsBytesSync().toList();
   }
 
   @override
   void initState() {
+    setPermissions();
     super.initState();
-    // Be careful : openAudioSession return a Future.
-    // Do not access your FlutterSoundPlayer or FlutterSoundRecorder before the completion of the Future
-    _mPlayer!.openPlayer().then((value) {
-      setState(() {
-        _mPlayerIsInited = true;
-      });
-    });
-    _openRecorder();
   }
 
-  @override
-  void dispose() {
-    stopPlayer();
-    _mPlayer!.closePlayer();
-    _mPlayer = null;
-
-    stopRecorder();
-    _mRecorder!.closeRecorder();
-    _mRecorder = null;
-    super.dispose();
+  void setPermissions() async {
+    await Permission.manageExternalStorage.request();
+    await Permission.storage.request();
   }
-
-  Future<IOSink> createFile() async {
-    var tempDir = await getTemporaryDirectory();
-    _mPath = '${tempDir.path}/flutter_sound_example.pcm';
-    var outputFile = File(_mPath!);
-    if (outputFile.existsSync()) {
-      await outputFile.delete();
-    }
-    return outputFile.openWrite();
-  }
-
-  // ----------------------  Here is the code to record to a Stream ------------
-
-  Future<void> record() async {
-    assert(_mRecorderIsInited && _mPlayer!.isStopped);
-    var sink = await createFile();
-    var recordingDataController = StreamController<Food>();
-    _mRecordingDataSubscription =
-        recordingDataController.stream.listen((buffer) {
-      if (buffer is FoodData) {
-        sink.add(buffer.data!);
-      }
-    });
-    await _mRecorder!.startRecorder(
-      toStream: recordingDataController.sink,
-      codec: Codec.pcm16,
-      numChannels: 1,
-      sampleRate: tSampleRate,
-    );
-    setState(() {});
-  }
-  // --------------------- (it was very simple, wasn't it ?) -------------------
-
-  Future<void> stopRecorder() async {
-    await _mRecorder!.stopRecorder();
-    if (_mRecordingDataSubscription != null) {
-      await _mRecordingDataSubscription!.cancel();
-      _mRecordingDataSubscription = null;
-    }
-    _mplaybackReady = true;
-  }
-
-  _Fn? getRecorderFn() {
-    if (!_mRecorderIsInited || !_mPlayer!.isStopped) {
-      return null;
-    }
-    return _mRecorder!.isStopped
-        ? record
-        : () {
-            stopRecorder().then((value) => setState(() {}));
-          };
-  }
-
-  void play() async {
-    assert(_mPlayerIsInited &&
-        _mplaybackReady &&
-        _mRecorder!.isStopped &&
-        _mPlayer!.isStopped);
-    await _mPlayer!.startPlayer(
-        fromURI: _mPath,
-        sampleRate: tSampleRate,
-        codec: Codec.pcm16,
-        numChannels: 1,
-        whenFinished: () {
-          setState(() {});
-        }); // The readability of Dart is very special :-(
-    setState(() {});
-  }
-
-  Future<void> stopPlayer() async {
-    await _mPlayer!.stopPlayer();
-  }
-
-  _Fn? getPlaybackFn() {
-    if (!_mPlayerIsInited || !_mplaybackReady || !_mRecorder!.isStopped) {
-      return null;
-    }
-    return _mPlayer!.isStopped
-        ? play
-        : () {
-            stopPlayer().then((value) => setState(() {}));
-          };
-  }
-
-  // ----------------------------------------------------------------------------------------------------------------------
 
   @override
   Widget build(BuildContext context) {
-    Widget makeBody() {
-      return Column(
-        children: [
-          Container(
-            margin: const EdgeInsets.all(3),
-            padding: const EdgeInsets.all(3),
-            height: 80,
-            width: double.infinity,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: Color(0xFFFAF0E6),
-              border: Border.all(
-                color: Colors.indigo,
-                width: 3,
-              ),
-            ),
-            child: Row(children: [
-              ElevatedButton(
-                onPressed: getRecorderFn(),
-                //color: Colors.white,
-                //disabledColor: Colors.grey,
-                child: Text(_mRecorder!.isRecording ? 'Stop' : 'Record'),
-              ),
-              SizedBox(
-                width: 20,
-              ),
-              Text(_mRecorder!.isRecording
-                  ? 'Recording in progress'
-                  : 'Recorder is stopped'),
-            ]),
-          ),
-          Container(
-            margin: const EdgeInsets.all(3),
-            padding: const EdgeInsets.all(3),
-            height: 80,
-            width: double.infinity,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: Color(0xFFFAF0E6),
-              border: Border.all(
-                color: Colors.indigo,
-                width: 3,
-              ),
-            ),
-            child: Row(children: [
-              ElevatedButton(
-                onPressed: getPlaybackFn(),
-                //color: Colors.white,
-                //disabledColor: Colors.grey,
-                child: Text(_mPlayer!.isPlaying ? 'Stop' : 'Play'),
-              ),
-              SizedBox(
-                width: 20,
-              ),
-              Text(_mPlayer!.isPlaying
-                  ? 'Playback in progress'
-                  : 'Player is stopped'),
-            ]),
-          ),
-        ],
-      );
-    }
-
     return Scaffold(
-      backgroundColor: Colors.blue,
+      backgroundColor: const Color.fromARGB(255, 108, 96, 225),
       appBar: AppBar(
-        title: const Text('Record to Stream ex.'),
+        toolbarHeight: 80,
+        backgroundColor: const Color.fromARGB(255, 108, 96, 225),
+        elevation: 0,
+        centerTitle: true,
+        title: const Text('Transcribe Your Audio'),
       ),
-      body: makeBody(),
+      body: SingleChildScrollView(
+        child: Container(
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topRight: Radius.circular(50),
+              topLeft: Radius.circular(50),
+            ),
+          ),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: <Widget>[
+                const SizedBox(
+                  height: 70,
+                ),
+                Container(
+                  height: 200,
+                  width: 300,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.black),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  padding: const EdgeInsets.all(5.0),
+                  child: content == ''
+                      ? const Text(
+                          'Your text will appear here',
+                          style: TextStyle(color: Colors.grey),
+                        )
+                      : Text(
+                          content,
+                          style: const TextStyle(fontSize: 20),
+                        ),
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                Container(
+                  child: is_Transcribing
+                      ? const Expanded(
+                          child: LoadingIndicator(
+                            indicatorType: Indicator.ballPulse,
+                            colors: [Colors.red, Colors.green, Colors.blue],
+                          ),
+                        )
+                      : ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            elevation: 10, backgroundColor: const Color.fromARGB(255, 108, 96, 225),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                          ),
+                          onPressed: is_Transcribing ? () {} : transcribe,
+                          child: is_Transcribing
+                              ? const CircularProgressIndicator()
+                              : const Text(
+                                  'Transcribe',
+                                  style: TextStyle(fontSize: 20),
+                                ),
+                        ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

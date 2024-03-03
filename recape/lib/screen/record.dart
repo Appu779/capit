@@ -9,9 +9,10 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:recape/screen/classroom.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
+
 
 const int tSampleRate = 44000;
+// ignore: unused_element
 typedef _Fn = void Function();
 
 class Recorder extends StatefulWidget {
@@ -410,14 +411,4 @@ class _RecorderState extends State<Recorder> {
   }
 }
 
-//Future<void> convertPCMtoMP3(String inputPath, String outputPath) async {
-  //final FlutterFFmpeg _flutterFFmpeg = FlutterFFmpeg();
 
-  //try {
-    //String command = '-i $inputPath -acodec libmp3lame $outputPath';
-    //int rc = await _flutterFFmpeg.execute(command);
-    //print('FFmpeg process exited with rc $rc');
-  //} catch (e) {
-    //print('Error executing FFmpeg command: $e');
-  //}
-//}
