@@ -1,4 +1,4 @@
 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
 
-'''Summarize the content of the college class lecture while maintaining accuracy, conciseness, proper headings and excluding non-relevant details such as teacher chitchats. Ensure that important figures and references are included where necessary. The summary should capture key points, concepts, and discussions comprehensively.
+'''Summarize the content of the class lecture while maintaining accuracy, conciseness, proper headings and excluding non-relevant details such as teacher chitchats. Ensure that important figures and references are included where necessary. The summary should capture key points, concepts, and discussions comprehensively.
       Please generate a concise summary of the lecture's main topics, covering essential details and omitting superfluous information. Ensure coherence, clarity, headings and accuracy in the generated notes.:\n\n" {text}  \n\nNotes:'''

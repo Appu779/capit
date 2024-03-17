@@ -1,4 +1,4 @@
-package com.example.recape
+package com.example.capit
 
 import io.flutter.embedding.android.FlutterActivity
 

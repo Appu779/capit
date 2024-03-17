@@ -131,8 +131,6 @@ class _AudiopageState extends State<Audiopage> {
     }
   }
 
-  
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -297,7 +295,7 @@ void addSessionToClass(
         await sessionsCollectionRef.add({
           'Session Name': sessionName,
           'Audio link': "Upload cheyyanam",
-          'Generated Notes': "Undakkanam",
+          'GeneratedNotes': "Undakkanam",
           'DateTime': timeDate,
           // Add any other fields as needed
         });
