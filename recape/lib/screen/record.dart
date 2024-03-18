@@ -10,7 +10,6 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:recape/screen/classroom.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-
 const int tSampleRate = 44000;
 // ignore: unused_element
 typedef _Fn = void Function();
@@ -87,9 +86,10 @@ class _RecorderState extends State<Recorder> {
     super.dispose();
   }
 
+  
   Future<IOSink> createFile() async {
     var tempDir = await getTemporaryDirectory();
-    _mPath = '${tempDir.path}/flutter_sound_example.pcm';
+    _mPath = '${tempDir.path}/recording.wav';
     var outputFile = File(_mPath!);
     if (outputFile.existsSync()) {
       await outputFile.delete();
@@ -151,24 +151,14 @@ class _RecorderState extends State<Recorder> {
 
   Future<void> uploadAudioToStorage() async {
     try {
-      // Record start time
-      DateTime startTime = DateTime.now();
-
       String fileName =
-          DateTime.now().millisecondsSinceEpoch.toString() + '.pcm';
+          DateTime.now().millisecondsSinceEpoch.toString() + '.wav';
       final Reference storageReference =
           FirebaseStorage.instance.ref().child('audio').child(fileName);
       final File audioFile = File(_mPath!);
 
       // Upload the audio file to Firebase Storage
       await storageReference.putFile(audioFile);
-
-      // Record end time
-      DateTime endTime = DateTime.now();
-
-      // Calculate upload duration
-      Duration uploadDuration = endTime.difference(startTime);
-      print('Upload duration: ${uploadDuration.inSeconds} seconds');
 
       // Get the current user
       User? user = FirebaseAuth.instance.currentUser;
@@ -410,5 +400,3 @@ class _RecorderState extends State<Recorder> {
     );
   }
 }
-
-

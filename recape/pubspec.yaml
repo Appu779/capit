@@ -54,6 +54,7 @@ flutter:
     # - assets/images/logo_l.png
     - assets/logo.mp4
     - assets/logo1.mp4
+    - assets/OSR_us_000_0010_8k.wav
     - assets/images/logocapit.png
     - assets/images/g.png
     - assets/images/s1.jpg

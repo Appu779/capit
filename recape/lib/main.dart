@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:recape/firebase/firebase_options.dart';
 import 'package:recape/screen/splash_screen.dart';
 
+import 'screen/test/test2.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
