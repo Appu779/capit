@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:recape/components/classdetails.dart';
 import 'package:recape/screen/clsrecord.dart';
 import 'package:recape/screen/event.dart';
+import 'package:recape/screen/crecord.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class Audiopage extends StatefulWidget {
@@ -240,7 +241,7 @@ class _AudiopageState extends State<Audiopage> {
                           onTap: () => Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const Recorders(),
+                              builder: (context) => const TestRecord(),
                             ),
                           ),
                           title: Text('${value[index]}'),

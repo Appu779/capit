@@ -86,7 +86,6 @@ class _RecorderState extends State<Recorder> {
     super.dispose();
   }
 
-  
   Future<IOSink> createFile() async {
     var tempDir = await getTemporaryDirectory();
     _mPath = '${tempDir.path}/recording.wav';
@@ -153,26 +152,21 @@ class _RecorderState extends State<Recorder> {
     try {
       String fileName =
           DateTime.now().millisecondsSinceEpoch.toString() + '.wav';
-      final Reference storageReference =
-          FirebaseStorage.instance.ref().child('audio').child(fileName);
+
+      // Initialize Firebase Storage with a custom storage bucket
+      final FirebaseStorage storage = FirebaseStorage.instanceFor(
+          bucket: 'gs://capit-3e0f2'); // Your custom storage bucket
+
+      final Reference storageReference = storage
+          .ref()
+          .child('audio')
+          .child(fileName); // Specify your folder here
+
+      // Replace _mPath with the path to your audio file
       final File audioFile = File(_mPath!);
 
       // Upload the audio file to Firebase Storage
       await storageReference.putFile(audioFile);
-
-      // Get the current user
-      User? user = FirebaseAuth.instance.currentUser;
-
-      // Access the Firestore collection "users"
-      CollectionReference usersCollection =
-          FirebaseFirestore.instance.collection('users');
-
-      // Access the document corresponding to the current user
-      DocumentReference userDocRef = usersCollection.doc(user!.uid);
-      String downloadUrl = await storageReference.getDownloadURL();
-
-      // Update the document with the download URL of the audio file
-      await userDocRef.update({'audio link': downloadUrl});
 
       print(
           'Audio file uploaded to Firebase Storage and URL stored in Firestore');

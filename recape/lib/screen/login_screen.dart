@@ -5,6 +5,7 @@ import 'package:recape/firebase/firebase_service.dart';
 import 'package:recape/screen/classroom.dart';
 import 'package:recape/screen/record.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:recape/screen/crecord.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
