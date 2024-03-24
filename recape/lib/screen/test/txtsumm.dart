@@ -6,7 +6,6 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore
 import 'package:recape/screen/test/transcript.dart';
 
-
 class TxtFileViewer extends StatefulWidget {
   const TxtFileViewer({Key? key}) : super(key: key);
 
@@ -29,7 +28,7 @@ class _TxtFileViewerState extends State<TxtFileViewer> {
     final Reference ref = storage
         .ref()
         .child('transcriptions')
-        .child('electrochemistry.m4a.wav_transcription.txt');
+        .child('flowers.m4a.wav_transcription.txt');
     try {
       final File file =
           File('${(await getTemporaryDirectory()).path}/file.txt');
@@ -98,7 +97,8 @@ class _TxtFileViewerState extends State<TxtFileViewer> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const TranscriptChat()),
+                  MaterialPageRoute(
+                      builder: (context) => const TranscriptChat()),
                 );
               },
               child: const Text('View Transcript Chat'),
@@ -111,7 +111,8 @@ class _TxtFileViewerState extends State<TxtFileViewer> {
 
   Future<void> _saveEditedTranscript(String editedTranscript) async {
     try {
-      final File newFile = File('${(await getTemporaryDirectory()).path}/edited_transcript.txt');
+      final File newFile =
+          File('${(await getTemporaryDirectory()).path}/edited_transcript.txt');
       await newFile.writeAsString(editedTranscript);
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text('Transcript saved successfully!'),

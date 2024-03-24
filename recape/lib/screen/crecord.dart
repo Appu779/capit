@@ -115,10 +115,11 @@ class _TestRecordState extends State<TestRecord> {
 
       // Access the document corresponding to the current user
       DocumentReference userDocRef = usersCollection.doc(user!.uid);
+      
       String downloadUrl = await storageReference.getDownloadURL();
 
       // Update the document with the download URL of the audio file
-      await userDocRef.update({'audio link': downloadUrl});
+      await userDocRef.update({'Audio link': downloadUrl});
 
       print(
           'Audio file uploaded to Firebase Storage and URL stored in Firestore');

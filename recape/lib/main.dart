@@ -4,8 +4,6 @@ import 'package:recape/firebase/firebase_options.dart';
 import 'package:recape/screen/splash_screen.dart';
 import 'package:recape/screen/test/txtsumm.dart';
 
-
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
